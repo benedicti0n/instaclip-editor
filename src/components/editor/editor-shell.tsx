@@ -7,11 +7,15 @@ import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { useVideoExport } from "./use-video-export";
 import { Button } from "@/components/ui/button";
+import { downloadBlob } from "@/lib/download";
 import { useEditorStore } from "@/store/editor-store";
+
+const CAPTION_FILE_NAME = "caption.txt";
 
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
   const mediaSrc = useEditorStore((state) => state.media.src);
+  const caption = useEditorStore((state) => state.media.caption);
   const loadSourceMetadata = useEditorStore(
     (state) => state.loadSourceMetadata,
   );
@@ -32,6 +36,19 @@ export function EditorShell() {
       ? "Export again"
       : "Export";
 
+  const hasCaption = caption.length > 0;
+
+  function handleDownloadCaption() {
+    if (!hasCaption) {
+      return;
+    }
+
+    downloadBlob(
+      new Blob([caption], { type: "text/plain;charset=utf-8" }),
+      CAPTION_FILE_NAME,
+    );
+  }
+
   useEffect(() => {
     void loadSourceMetadata();
   }, [mediaSrc, loadSourceMetadata]);
@@ -41,6 +58,20 @@ export function EditorShell() {
       <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-950 px-4 sm:px-6">
         <h1 className="text-sm font-medium text-zinc-300">Editor</h1>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadCaption}
+            disabled={!hasCaption}
+            aria-label={
+              hasCaption
+                ? "Download caption"
+                : "Download caption (no caption available)"
+            }
+            title={hasCaption ? undefined : "No caption available"}
+          >
+            Download caption
+          </Button>
           {isExporting ? (
             <Button variant="outline" size="sm" onClick={cancelExport}>
               Cancel
