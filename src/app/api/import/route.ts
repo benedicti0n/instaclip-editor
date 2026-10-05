@@ -12,6 +12,10 @@ import {
   writeImportRecord,
 } from "@/lib/server/import-storage";
 import {
+  releaseImportSlot,
+  tryAcquireImportSlot,
+} from "@/lib/server/import-limiter";
+import {
   extractInstagramMedia,
   YtDlpError,
   type YtDlpErrorCode,
@@ -100,13 +104,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const importId = createImportId();
+  if (!tryAcquireImportSlot()) {
+    return errorResponse(
+      429,
+      "IMPORT_BUSY",
+      "Too many videos are being imported right now. Try again shortly.",
+    );
+  }
 
-  await cleanupStaleImports().catch(() => undefined);
-
-  const workspaceDirectory = await createImportWorkspace(importId);
+  let importId: string | null = null;
 
   try {
+    const activeImportId = createImportId();
+    importId = activeImportId;
+
+    await cleanupStaleImports().catch(() => undefined);
+
+    const workspaceDirectory = await createImportWorkspace(activeImportId);
+
     const extracted = await extractInstagramMedia(
       validation.normalizedUrl,
       workspaceDirectory,
@@ -135,7 +150,7 @@ export async function POST(request: Request) {
       );
     }
 
-    await writeImportRecord(importId, {
+    await writeImportRecord(activeImportId, {
       sourceUrl: validation.normalizedUrl,
       caption: extracted.description,
       title: extracted.title,
@@ -147,10 +162,10 @@ export async function POST(request: Request) {
     });
 
     const response: ImportSuccessResponse = {
-      importId,
+      importId: activeImportId,
       media: {
         kind: "imported",
-        src: `/api/imports/${importId}/video`,
+        src: `/api/imports/${activeImportId}/video`,
         caption: extracted.description,
         originalUrl: validation.normalizedUrl,
       },
@@ -163,7 +178,9 @@ export async function POST(request: Request) {
 
     return Response.json(response);
   } catch (error) {
-    await removeImport(importId).catch(() => undefined);
+    if (importId) {
+      await removeImport(importId).catch(() => undefined);
+    }
 
     if (error instanceof ImportPolicyError) {
       return errorResponse(error.status, error.code, error.message);
@@ -187,5 +204,7 @@ export async function POST(request: Request) {
       "INTERNAL_ERROR",
       "The import failed unexpectedly. Try again.",
     );
+  } finally {
+    releaseImportSlot();
   }
 }
