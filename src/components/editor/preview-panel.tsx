@@ -14,7 +14,7 @@ import {
   ClipComposition,
 } from "@/remotion/compositions/clip-composition";
 import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
-import type { VideoSize, VideoTransform } from "@/types/editor";
+import type { TextLayer, VideoSize, VideoTransform } from "@/types/editor";
 
 type PreviewPanelProps = {
   playerRef: RefObject<PlayerRef | null>;
@@ -23,6 +23,7 @@ type PreviewPanelProps = {
   sourceSize: VideoSize;
   transform: VideoTransform;
   onTransformChange: (transform: VideoTransform) => void;
+  textLayers: TextLayer[];
 };
 
 type DragState = {
@@ -41,6 +42,7 @@ export function PreviewPanel({
   sourceSize,
   transform,
   onTransformChange,
+  textLayers,
 }: PreviewPanelProps) {
   const dragStateRef = useRef<DragState | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -49,6 +51,7 @@ export function PreviewPanel({
     sourceWidth: sourceSize.width,
     sourceHeight: sourceSize.height,
     transform,
+    textLayers,
   };
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {

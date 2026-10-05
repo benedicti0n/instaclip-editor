@@ -1,6 +1,7 @@
 import { AbsoluteFill, Video, useVideoConfig } from "remotion";
 import { getRenderedVideoSize } from "@/lib/editor";
-import type { VideoTransform } from "@/types/editor";
+import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
+import type { TextLayer, VideoTransform } from "@/types/editor";
 
 export const CLIP_COMPOSITION_FPS = 30;
 
@@ -9,6 +10,7 @@ export type ClipCompositionProps = {
   sourceWidth: number;
   sourceHeight: number;
   transform: VideoTransform;
+  textLayers: TextLayer[];
 };
 
 export function ClipComposition({
@@ -16,6 +18,7 @@ export function ClipComposition({
   sourceWidth,
   sourceHeight,
   transform,
+  textLayers,
 }: ClipCompositionProps) {
   const { width, height } = useVideoConfig();
   const renderedSize = getRenderedVideoSize(
@@ -38,6 +41,14 @@ export function ClipComposition({
       >
         <Video src={src} style={{ width: "100%", height: "100%" }} />
       </div>
+      {textLayers.map((layer) => (
+        <div
+          key={layer.id}
+          style={getTextLayerPositionStyle(layer, { width, height })}
+        >
+          <div style={getTextLayerStyle(layer)}>{layer.text}</div>
+        </div>
+      ))}
     </AbsoluteFill>
   );
 }

@@ -60,6 +60,9 @@ export function EditorShell() {
     sourceSize,
     canvasSize,
   );
+  const clampedTextLayers = textLayers.map((layer) =>
+    clampTextLayerToCanvas(layer, canvasSize),
+  );
   const durationInFrames = Math.max(
     1,
     Math.round(sourceMetadata.durationInSeconds * CLIP_COMPOSITION_FPS),
@@ -145,6 +148,7 @@ export function EditorShell() {
           sourceSize={sourceSize}
           transform={clampedVideoTransform}
           onTransformChange={handleTransformChange}
+          textLayers={clampedTextLayers}
         />
         <InspectorPanel
           aspectRatio={aspectRatio}
