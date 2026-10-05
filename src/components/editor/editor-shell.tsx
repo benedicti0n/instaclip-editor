@@ -6,8 +6,6 @@ import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
-import { getVideoMetadata } from "@/lib/media";
-import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
 import { useEditorStore } from "@/store/editor-store";
 import { selectDurationInFrames } from "@/store/editor-selectors";
@@ -15,25 +13,14 @@ import { selectDurationInFrames } from "@/store/editor-selectors";
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
   const durationInFrames = useEditorStore(selectDurationInFrames);
-  const setSourceMetadata = useEditorStore((state) => state.setSourceMetadata);
+  const mediaSrc = useEditorStore((state) => state.media.src);
+  const loadSourceMetadata = useEditorStore(
+    (state) => state.loadSourceMetadata,
+  );
 
   useEffect(() => {
-    let cancelled = false;
-
-    getVideoMetadata(SAMPLE_VIDEO_SRC)
-      .then((metadata) => {
-        if (!cancelled) {
-          setSourceMetadata(metadata);
-        }
-      })
-      .catch(() => {
-        // Keep the known fixture metadata if it cannot be loaded.
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [setSourceMetadata]);
+    void loadSourceMetadata();
+  }, [mediaSrc, loadSourceMetadata]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:overflow-hidden">

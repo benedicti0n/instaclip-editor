@@ -6,17 +6,21 @@ import {
   DEFAULT_ASPECT_RATIO,
   DEFAULT_VIDEO_TRANSFORM,
 } from "@/lib/editor";
+import { getVideoMetadata } from "@/lib/media";
 import { SAMPLE_MEDIA, SAMPLE_VIDEO_METADATA } from "@/lib/sample-video";
 import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
 import type {
   AspectRatioPreset,
   EditorDocument,
+  MediaSource,
   TextLayer,
   VideoMetadata,
   VideoTransform,
 } from "@/types/editor";
 
 export type EditorActions = {
+  setMedia: (media: MediaSource, metadata: VideoMetadata) => void;
+  loadSourceMetadata: () => Promise<void>;
   setSourceMetadata: (metadata: VideoMetadata) => void;
   setAspectRatio: (preset: AspectRatioPreset) => void;
   setVideoTransform: (transform: VideoTransform) => void;
@@ -50,9 +54,33 @@ function getGeometry(document: EditorDocument) {
   };
 }
 
-export const useEditorStore = create<EditorState>()((set) => ({
+export const useEditorStore = create<EditorState>()((set, get) => ({
   ...INITIAL_DOCUMENT,
   selectedTextLayerId: null,
+
+  setMedia: (media, metadata) =>
+    set({
+      ...INITIAL_DOCUMENT,
+      media,
+      sourceMetadata: metadata,
+      selectedTextLayerId: null,
+    }),
+
+  loadSourceMetadata: async () => {
+    const { media } = get();
+
+    try {
+      const metadata = await getVideoMetadata(media.src);
+
+      if (get().media.src !== media.src) {
+        return;
+      }
+
+      get().setSourceMetadata(metadata);
+    } catch {
+      // Keep the known fallback metadata if it cannot be loaded.
+    }
+  },
 
   setSourceMetadata: (metadata) =>
     set((state) => {
