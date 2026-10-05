@@ -139,6 +139,13 @@ export function EditorShell() {
         >
           {exportError}
         </p>
+      ) : exportStatus === "success" ? (
+        <p
+          role="status"
+          className="border-b border-zinc-800 bg-zinc-950 px-4 py-2 text-xs text-zinc-400 sm:px-6"
+        >
+          Export complete — edited-video.mp4 saved.
+        </p>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <PreviewPanel playerRef={playerRef} />
