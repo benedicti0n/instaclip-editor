@@ -175,6 +175,7 @@ export function EditorShell() {
           onResetFraming={handleResetFraming}
           selectedTextLayer={selectedTextLayer}
           onAddTextLayer={handleAddTextLayer}
+          onTextLayerChange={handleTextLayerChange}
         />
       </div>
       <PlaybackBar

@@ -15,6 +15,7 @@ type InspectorPanelProps = {
   onResetFraming: () => void;
   selectedTextLayer: TextLayer | null;
   onAddTextLayer: () => void;
+  onTextLayerChange: (id: string, patch: Partial<TextLayer>) => void;
 };
 
 export function InspectorPanel({
@@ -25,6 +26,7 @@ export function InspectorPanel({
   onResetFraming,
   selectedTextLayer,
   onAddTextLayer,
+  onTextLayerChange,
 }: InspectorPanelProps) {
   return (
     <aside
@@ -98,9 +100,28 @@ export function InspectorPanel({
           Add text
         </Button>
         {selectedTextLayer ? (
-          <p className="mt-3 truncate text-xs text-zinc-500">
-            Selected: {selectedTextLayer.text || "Empty text"}
-          </p>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label
+                htmlFor="text-content"
+                className="text-xs font-medium text-zinc-500"
+              >
+                Content
+              </label>
+              <textarea
+                id="text-content"
+                rows={3}
+                value={selectedTextLayer.text}
+                onChange={(event) =>
+                  onTextLayerChange(selectedTextLayer.id, {
+                    text: event.target.value,
+                  })
+                }
+                placeholder="Add your text"
+                className="mt-2 w-full resize-y rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+              />
+            </div>
+          </div>
         ) : (
           <p className="mt-3 text-xs leading-5 text-zinc-500">
             Add text to place it over the video.
