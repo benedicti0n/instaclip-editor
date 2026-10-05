@@ -12,6 +12,7 @@ type InspectorPanelProps = {
   onAspectRatioChange: (preset: AspectRatioPreset) => void;
   scale: number;
   onScaleChange: (scale: number) => void;
+  onResetFraming: () => void;
 };
 
 export function InspectorPanel({
@@ -19,6 +20,7 @@ export function InspectorPanel({
   onAspectRatioChange,
   scale,
   onScaleChange,
+  onResetFraming,
 }: InspectorPanelProps) {
   return (
     <aside
@@ -73,6 +75,14 @@ export function InspectorPanel({
             className="mt-2 w-full cursor-pointer accent-zinc-300"
           />
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-3 w-full"
+          onClick={onResetFraming}
+        >
+          Reset framing
+        </Button>
       </InspectorSection>
       <InspectorSection title="Text">
         <Button variant="outline" size="sm" disabled className="w-full">

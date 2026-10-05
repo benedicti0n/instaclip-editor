@@ -64,6 +64,10 @@ export function EditorShell() {
     });
   }
 
+  function handleResetFraming() {
+    setVideoTransform(DEFAULT_VIDEO_TRANSFORM);
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -106,6 +110,7 @@ export function EditorShell() {
           onAspectRatioChange={setAspectRatio}
           scale={videoTransform.scale}
           onScaleChange={handleScaleChange}
+          onResetFraming={handleResetFraming}
         />
       </div>
       <PlaybackBar
