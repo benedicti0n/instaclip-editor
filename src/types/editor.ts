@@ -21,3 +21,30 @@ export type VideoSize = {
   width: number;
   height: number;
 };
+
+export type TextAlignment = "left" | "center" | "right";
+
+export type TextFontFamily = "geist" | "arial" | "georgia" | "courier";
+
+export type TextFontWeight = 400 | 600 | 700;
+
+/**
+ * A text overlay layer.
+ *
+ * `x` and `y` are offsets of the layer's center from the canvas center, in
+ * composition pixels (the same coordinate system as `VideoTransform`), so
+ * layers survive responsive preview scaling and aspect-ratio changes.
+ * `fontSize` is also expressed in composition pixels.
+ */
+export type TextLayer = {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  fontFamily: TextFontFamily;
+  fontWeight: TextFontWeight;
+  color: string;
+  textAlign: TextAlignment;
+  hasShadow: boolean;
+};
