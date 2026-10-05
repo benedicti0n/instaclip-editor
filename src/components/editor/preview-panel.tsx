@@ -1,23 +1,27 @@
 "use client";
 
+import type { RefObject } from "react";
 import { Player } from "@remotion/player";
+import type { PlayerRef } from "@remotion/player";
 import {
   CLIP_COMPOSITION_FPS,
   CLIP_COMPOSITION_HEIGHT,
   CLIP_COMPOSITION_WIDTH,
   ClipComposition,
 } from "@/remotion/compositions/clip-composition";
-import {
-  SAMPLE_VIDEO_DURATION_IN_SECONDS,
-  SAMPLE_VIDEO_SRC,
-} from "@/lib/sample-video";
-
-const DURATION_IN_FRAMES =
-  SAMPLE_VIDEO_DURATION_IN_SECONDS * CLIP_COMPOSITION_FPS;
+import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
 
 const INPUT_PROPS = { src: SAMPLE_VIDEO_SRC };
 
-export function PreviewPanel() {
+type PreviewPanelProps = {
+  playerRef: RefObject<PlayerRef | null>;
+  durationInFrames: number;
+};
+
+export function PreviewPanel({
+  playerRef,
+  durationInFrames,
+}: PreviewPanelProps) {
   return (
     <section
       aria-label="Video preview"
@@ -25,9 +29,10 @@ export function PreviewPanel() {
     >
       <div className="h-full min-h-[18rem] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-800 bg-black lg:min-h-0">
         <Player
+          ref={playerRef}
           component={ClipComposition}
           inputProps={INPUT_PROPS}
-          durationInFrames={DURATION_IN_FRAMES}
+          durationInFrames={durationInFrames}
           compositionWidth={CLIP_COMPOSITION_WIDTH}
           compositionHeight={CLIP_COMPOSITION_HEIGHT}
           fps={CLIP_COMPOSITION_FPS}
