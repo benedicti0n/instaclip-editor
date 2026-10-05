@@ -35,7 +35,8 @@ const VERSION_TIMEOUT_MS = 5_000;
 
 const EXTRACTION_TIMEOUT_MS = 120_000;
 
-const FORMAT_SELECTOR = "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b";
+const FORMAT_SELECTOR =
+  "bv*[vcodec^=avc1]+ba[ext=m4a]/b[ext=mp4]/bv*[ext=mp4]+ba[ext=m4a]/bv*+ba/b";
 
 const ALLOWED_MEDIA_EXTENSIONS = new Set(["mp4", "m4v", "mov", "webm"]);
 
