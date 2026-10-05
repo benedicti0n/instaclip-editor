@@ -1,6 +1,6 @@
 import { runProcess } from "./process";
 
-export type ProbedVideoMetadata = {
+type ProbedVideoMetadata = {
   durationInSeconds: number;
   width: number;
   height: number;

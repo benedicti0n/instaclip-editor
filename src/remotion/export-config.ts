@@ -8,7 +8,7 @@ import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import type { ClipRenderInput } from "@/remotion/clip-render-input";
 import type { EditorDocument } from "@/types/editor";
 
-export type ExportConfiguration = {
+type ExportConfiguration = {
   inputProps: ClipRenderInput;
   width: number;
   height: number;

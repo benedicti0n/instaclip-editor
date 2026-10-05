@@ -11,14 +11,14 @@ import path from "node:path";
 
 import { IMPORT_RUNTIME_LIMITS } from "./import-config";
 
-export const IMPORT_ROOT = path.join(process.cwd(), ".tmp", "imports");
+const IMPORT_ROOT = path.join(process.cwd(), ".tmp", "imports");
 
 const IMPORT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const SAFE_FILENAME_PATTERN = /^[A-Za-z0-9._-]+$/;
 
-export type ImportRecord = {
+type ImportRecord = {
   sourceUrl: string;
   caption: string;
   title: string | null;
@@ -33,11 +33,11 @@ export function createImportId(): string {
   return randomUUID();
 }
 
-export function isValidImportId(id: string): boolean {
+function isValidImportId(id: string): boolean {
   return IMPORT_ID_PATTERN.test(id);
 }
 
-export function getImportDirectory(id: string): string | null {
+function getImportDirectory(id: string): string | null {
   if (!isValidImportId(id)) {
     return null;
   }
@@ -71,9 +71,7 @@ export async function writeImportRecord(
   );
 }
 
-export async function readImportRecord(
-  id: string,
-): Promise<ImportRecord | null> {
+async function readImportRecord(id: string): Promise<ImportRecord | null> {
   const directory = getImportDirectory(id);
   if (!directory) {
     return null;

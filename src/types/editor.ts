@@ -33,7 +33,7 @@ export type VideoMetadata = {
  * development fixture from media a user actually imported, so production can
  * refuse to edit the synthetic sample.
  */
-export type MediaSourceKind = "sample" | "imported";
+type MediaSourceKind = "sample" | "imported";
 
 export type MediaSource = {
   kind: MediaSourceKind;

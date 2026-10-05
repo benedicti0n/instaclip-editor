@@ -7,7 +7,7 @@ import type {
   VideoSize,
 } from "@/types/editor";
 
-export const DEFAULT_TEXT_LAYER: Omit<TextLayer, "id"> = {
+const DEFAULT_TEXT_LAYER: Omit<TextLayer, "id"> = {
   text: "Add your text",
   x: 0,
   y: 0,
@@ -23,7 +23,7 @@ export const MIN_TEXT_FONT_SIZE = 24;
 
 export const MAX_TEXT_FONT_SIZE = 200;
 
-export const TEXT_FONT_STACKS: Record<TextFontFamily, string> = {
+const TEXT_FONT_STACKS: Record<TextFontFamily, string> = {
   geist: "var(--font-geist-sans), system-ui, sans-serif",
   arial: "Arial, Helvetica, sans-serif",
   georgia: "Georgia, 'Times New Roman', serif",

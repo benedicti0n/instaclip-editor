@@ -3,7 +3,7 @@ import path from "node:path";
 import { probeVideoFile } from "./media-probe";
 import { runProcess } from "./process";
 
-export type ExtractedMedia = {
+type ExtractedMedia = {
   title: string | null;
   description: string;
   durationInSeconds: number;

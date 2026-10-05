@@ -1,7 +1,7 @@
 import { runProcess } from "./process";
 import { getYtDlpVersion } from "./yt-dlp";
 
-export type ToolAvailability = {
+type ToolAvailability = {
   ytDlp: boolean;
   ffprobe: boolean;
 };

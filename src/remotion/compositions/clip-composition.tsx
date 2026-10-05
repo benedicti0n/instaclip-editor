@@ -4,15 +4,13 @@ import { getRenderedVideoSize } from "@/lib/editor";
 import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
 import type { ClipRenderInput } from "@/remotion/clip-render-input";
 
-export type ClipCompositionProps = ClipRenderInput;
-
 export function ClipComposition({
   src,
   sourceWidth,
   sourceHeight,
   transform,
   textLayers,
-}: ClipCompositionProps) {
+}: ClipRenderInput) {
   const { width, height } = useVideoConfig();
   const renderedSize = getRenderedVideoSize(
     { width: sourceWidth, height: sourceHeight },

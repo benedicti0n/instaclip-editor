@@ -18,7 +18,7 @@ import type {
   VideoTransform,
 } from "@/types/editor";
 
-export type EditorActions = {
+type EditorActions = {
   setMedia: (media: MediaSource, metadata: VideoMetadata) => void;
   loadSourceMetadata: () => Promise<void>;
   setSourceMetadata: (metadata: VideoMetadata) => void;

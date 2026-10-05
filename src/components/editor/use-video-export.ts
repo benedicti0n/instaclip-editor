@@ -14,7 +14,7 @@ import { downloadBlob } from "@/lib/download";
 import { selectEditorDocument } from "@/store/editor-selectors";
 import { useEditorStore } from "@/store/editor-store";
 
-export type VideoExportStatus = "idle" | "rendering" | "success" | "error";
+type VideoExportStatus = "idle" | "rendering" | "success" | "error";
 
 const EXPORT_FILE_NAME = "edited-video.mp4";
 

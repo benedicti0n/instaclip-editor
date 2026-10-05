@@ -74,10 +74,7 @@ export function getCanvasSize(
   }
 }
 
-export function getCoverScale(
-  sourceSize: VideoSize,
-  canvasSize: VideoSize,
-): number {
+function getCoverScale(sourceSize: VideoSize, canvasSize: VideoSize): number {
   return Math.max(
     canvasSize.width / sourceSize.width,
     canvasSize.height / sourceSize.height,
@@ -97,7 +94,7 @@ export function getRenderedVideoSize(
   };
 }
 
-export function getPanBounds(
+function getPanBounds(
   sourceSize: VideoSize,
   canvasSize: VideoSize,
   scale: number,
