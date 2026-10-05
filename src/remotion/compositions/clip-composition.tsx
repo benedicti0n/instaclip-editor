@@ -4,8 +4,6 @@ import { getRenderedVideoSize } from "@/lib/editor";
 import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
 import type { ClipRenderInput } from "@/remotion/clip-render-input";
 
-export const CLIP_COMPOSITION_FPS = 30;
-
 export type ClipCompositionProps = ClipRenderInput;
 
 export function ClipComposition({

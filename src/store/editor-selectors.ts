@@ -1,9 +1,10 @@
 import {
   clampVideoTransform,
   getCanvasSize,
+  getDurationInFrames,
   getSourceSize,
 } from "@/lib/editor";
-import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
+import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import type { EditorState } from "./editor-store";
 import type { EditorDocument, TextLayer } from "@/types/editor";
 
@@ -33,8 +34,5 @@ export function selectClampedVideoScale(state: EditorState): number {
 }
 
 export function selectDurationInFrames(state: EditorState): number {
-  return Math.max(
-    1,
-    Math.round(state.sourceMetadata.durationInSeconds * CLIP_COMPOSITION_FPS),
-  );
+  return getDurationInFrames(state.sourceMetadata, CLIP_COMPOSITION_FPS);
 }

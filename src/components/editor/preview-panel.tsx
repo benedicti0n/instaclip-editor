@@ -11,10 +11,8 @@ import {
 import { Player } from "@remotion/player";
 import type { PlayerRef } from "@remotion/player";
 import { useShallow } from "zustand/react/shallow";
-import {
-  CLIP_COMPOSITION_FPS,
-  ClipComposition,
-} from "@/remotion/compositions/clip-composition";
+import { ClipComposition } from "@/remotion/compositions/clip-composition";
+import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import { createClipRenderInput } from "@/remotion/clip-render-input";
 import { getCanvasSize, getSourceSize } from "@/lib/editor";
 import { useEditorStore } from "@/store/editor-store";

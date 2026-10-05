@@ -21,6 +21,13 @@ export function getSourceSize(metadata: VideoMetadata): VideoSize {
   return { width: metadata.width, height: metadata.height };
 }
 
+export function getDurationInFrames(
+  metadata: VideoMetadata,
+  fps: number,
+): number {
+  return Math.max(1, Math.round(metadata.durationInSeconds * fps));
+}
+
 export const ASPECT_RATIO_PRESETS: ReadonlyArray<{
   value: AspectRatioPreset;
   label: string;

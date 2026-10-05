@@ -4,7 +4,7 @@ import { useEffect, useState, type ChangeEvent, type RefObject } from "react";
 import type { PlayerRef } from "@remotion/player";
 import { Button } from "@/components/ui/button";
 import { formatTimecode } from "@/lib/time";
-import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
+import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import { useEditorStore } from "@/store/editor-store";
 import { selectDurationInFrames } from "@/store/editor-selectors";
 
