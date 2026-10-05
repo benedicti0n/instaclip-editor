@@ -9,9 +9,9 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 
-export const IMPORT_ROOT = path.join(process.cwd(), ".tmp", "imports");
+import { IMPORT_RUNTIME_LIMITS } from "./import-config";
 
-export const DEFAULT_IMPORT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+export const IMPORT_ROOT = path.join(process.cwd(), ".tmp", "imports");
 
 const IMPORT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -130,7 +130,7 @@ export async function removeImport(id: string): Promise<void> {
 }
 
 export async function cleanupStaleImports(
-  maxAgeMs: number = DEFAULT_IMPORT_MAX_AGE_MS,
+  maxAgeMs: number = IMPORT_RUNTIME_LIMITS.importTtlMs,
 ): Promise<number> {
   let entries;
   try {
