@@ -1,5 +1,6 @@
 import type {
   AspectRatioPreset,
+  EditorDocument,
   VideoMetadata,
   VideoSize,
   VideoTransform,
@@ -26,6 +27,22 @@ export function getDurationInFrames(
   fps: number,
 ): number {
   return Math.max(1, Math.round(metadata.durationInSeconds * fps));
+}
+
+/**
+ * Whether the document contains edits worth protecting: a changed aspect
+ * ratio, a moved/zoomed video, or any text layer. Importing a different media
+ * source is a document lifecycle change, not an edit, and selection/playback
+ * are runtime state, so neither counts here.
+ */
+export function isEditorDocumentDirty(document: EditorDocument): boolean {
+  return (
+    document.aspectRatio !== DEFAULT_ASPECT_RATIO ||
+    document.videoTransform.x !== DEFAULT_VIDEO_TRANSFORM.x ||
+    document.videoTransform.y !== DEFAULT_VIDEO_TRANSFORM.y ||
+    document.videoTransform.scale !== DEFAULT_VIDEO_TRANSFORM.scale ||
+    document.textLayers.length > 0
+  );
 }
 
 export const ASPECT_RATIO_PRESETS: ReadonlyArray<{

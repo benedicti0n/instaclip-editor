@@ -3,6 +3,7 @@ import {
   getCanvasSize,
   getDurationInFrames,
   getSourceSize,
+  isEditorDocumentDirty,
 } from "@/lib/editor";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import type { EditorState } from "./editor-store";
@@ -35,4 +36,8 @@ export function selectClampedVideoScale(state: EditorState): number {
 
 export function selectDurationInFrames(state: EditorState): number {
   return getDurationInFrames(state.sourceMetadata, CLIP_COMPOSITION_FPS);
+}
+
+export function selectIsDocumentDirty(state: EditorState): boolean {
+  return isEditorDocumentDirty(selectEditorDocument(state));
 }

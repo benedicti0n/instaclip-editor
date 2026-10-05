@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import type { PlayerRef } from "@remotion/player";
 import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
@@ -9,16 +10,20 @@ import { useVideoExport } from "./use-video-export";
 import { Button } from "@/components/ui/button";
 import { downloadBlob } from "@/lib/download";
 import { useEditorStore } from "@/store/editor-store";
+import { selectIsDocumentDirty } from "@/store/editor-selectors";
 
 const CAPTION_FILE_NAME = "caption.txt";
 
 export function EditorShell() {
+  const router = useRouter();
   const playerRef = useRef<PlayerRef>(null);
   const mediaSrc = useEditorStore((state) => state.media.src);
   const caption = useEditorStore((state) => state.media.caption);
+  const isDirty = useEditorStore(selectIsDocumentDirty);
   const loadSourceMetadata = useEditorStore(
     (state) => state.loadSourceMetadata,
   );
+  const resetEditor = useEditorStore((state) => state.resetEditor);
   const {
     status: exportStatus,
     progress: exportProgress,
@@ -35,7 +40,6 @@ export function EditorShell() {
     : exportStatus === "success"
       ? "Export again"
       : "Export";
-
   const hasCaption = caption.length > 0;
 
   function handleDownloadCaption() {
@@ -49,6 +53,22 @@ export function EditorShell() {
     );
   }
 
+  function handleNewVideo() {
+    if (isExporting) {
+      return;
+    }
+
+    if (
+      isDirty &&
+      !window.confirm("Discard your edits and import a new video?")
+    ) {
+      return;
+    }
+
+    resetEditor();
+    router.push("/");
+  }
+
   useEffect(() => {
     void loadSourceMetadata();
   }, [mediaSrc, loadSourceMetadata]);
@@ -58,6 +78,14 @@ export function EditorShell() {
       <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-950 px-4 sm:px-6">
         <h1 className="text-sm font-medium text-zinc-300">Editor</h1>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNewVideo}
+            disabled={isExporting}
+          >
+            New video
+          </Button>
           <Button
             variant="outline"
             size="sm"
