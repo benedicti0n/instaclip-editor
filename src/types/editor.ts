@@ -22,6 +22,33 @@ export type VideoSize = {
   height: number;
 };
 
+export type VideoMetadata = {
+  durationInSeconds: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * The media currently loaded into the editor. Phase 6 can replace the sample
+ * fixture by pointing `src` at an imported video.
+ */
+export type MediaSource = {
+  src: string;
+};
+
+/**
+ * The renderable editor document: everything needed to reproduce the visual
+ * composition. Editor UI state such as selection is intentionally not part of
+ * this model.
+ */
+export type EditorDocument = {
+  media: MediaSource;
+  sourceMetadata: VideoMetadata;
+  aspectRatio: AspectRatioPreset;
+  videoTransform: VideoTransform;
+  textLayers: TextLayer[];
+};
+
 export type TextAlignment = "left" | "center" | "right";
 
 export type TextFontFamily = "geist" | "arial" | "georgia" | "courier";

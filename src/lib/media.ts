@@ -1,8 +1,4 @@
-export type VideoMetadata = {
-  durationInSeconds: number;
-  width: number;
-  height: number;
-};
+import type { VideoMetadata } from "@/types/editor";
 
 export function getVideoMetadata(src: string): Promise<VideoMetadata> {
   return new Promise((resolve, reject) => {

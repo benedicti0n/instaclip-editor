@@ -11,27 +11,17 @@ import {
   getCanvasSize,
   DEFAULT_VIDEO_TRANSFORM,
 } from "@/lib/editor";
-import { getVideoMetadata, type VideoMetadata } from "@/lib/media";
-import {
-  SAMPLE_VIDEO_DURATION_IN_SECONDS,
-  SAMPLE_VIDEO_HEIGHT,
-  SAMPLE_VIDEO_SRC,
-  SAMPLE_VIDEO_WIDTH,
-} from "@/lib/sample-video";
+import { getVideoMetadata } from "@/lib/media";
+import { SAMPLE_VIDEO_METADATA, SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
 import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
 import type {
   AspectRatioPreset,
   TextLayer,
+  VideoMetadata,
   VideoSize,
   VideoTransform,
 } from "@/types/editor";
-
-const INITIAL_SOURCE_METADATA: VideoMetadata = {
-  durationInSeconds: SAMPLE_VIDEO_DURATION_IN_SECONDS,
-  width: SAMPLE_VIDEO_WIDTH,
-  height: SAMPLE_VIDEO_HEIGHT,
-};
 
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
@@ -40,7 +30,7 @@ export function EditorShell() {
     DEFAULT_VIDEO_TRANSFORM,
   );
   const [sourceMetadata, setSourceMetadata] = useState<VideoMetadata>(
-    INITIAL_SOURCE_METADATA,
+    SAMPLE_VIDEO_METADATA,
   );
   const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
   const [selectedTextLayerId, setSelectedTextLayerId] = useState<string | null>(
