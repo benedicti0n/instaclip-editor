@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { probeVideoFile } from "./media-probe";
 import { runProcess } from "./process";
@@ -10,6 +10,7 @@ export type ExtractedMedia = {
   width: number;
   height: number;
   videoFilename: string;
+  fileSizeBytes: number;
 };
 
 export type YtDlpErrorCode =
@@ -133,9 +134,9 @@ export async function extractInstagramMedia(
   }
 
   const videoFilename = await findDownloadedVideo(workspaceDirectory);
-  const probe = await probeVideoFile(
-    path.join(workspaceDirectory, videoFilename),
-  );
+  const videoPath = path.join(workspaceDirectory, videoFilename);
+  const probe = await probeVideoFile(videoPath);
+  const fileStats = await stat(videoPath);
 
   const durationInSeconds =
     probe?.durationInSeconds ?? toPositiveNumber(entry.duration);
@@ -159,6 +160,7 @@ export async function extractInstagramMedia(
     width,
     height,
     videoFilename,
+    fileSizeBytes: fileStats.size,
   };
 }
 

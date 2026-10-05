@@ -66,5 +66,15 @@ export function formatDurationLimit(seconds: number): string {
 }
 
 export function formatBytesLimit(bytes: number): string {
-  return `${Math.round(bytes / (1024 * 1024))} MB`;
+  const megabytes = bytes / (1024 * 1024);
+
+  if (megabytes >= 10) {
+    return `${Math.round(megabytes)} MB`;
+  }
+
+  if (megabytes >= 1) {
+    return `${megabytes.toFixed(1)} MB`;
+  }
+
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }

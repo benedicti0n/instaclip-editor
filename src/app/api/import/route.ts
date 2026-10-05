@@ -1,6 +1,7 @@
 import { validateInstagramUrl } from "@/lib/instagram-url";
 import {
   IMPORT_RUNTIME_LIMITS,
+  formatBytesLimit,
   formatDurationLimit,
 } from "@/lib/server/import-config";
 import {
@@ -120,6 +121,16 @@ export async function POST(request: Request) {
         422,
         `ClipCrop supports videos up to ${formatDurationLimit(
           IMPORT_RUNTIME_LIMITS.maxVideoDurationSeconds,
+        )}.`,
+      );
+    }
+
+    if (extracted.fileSizeBytes > IMPORT_RUNTIME_LIMITS.maxVideoBytes) {
+      throw new ImportPolicyError(
+        "VIDEO_TOO_LARGE",
+        422,
+        `ClipCrop supports videos up to ${formatBytesLimit(
+          IMPORT_RUNTIME_LIMITS.maxVideoBytes,
         )}.`,
       );
     }

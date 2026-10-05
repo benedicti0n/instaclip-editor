@@ -9,6 +9,7 @@ export type ImportErrorCode =
   | "EXTRACTION_FAILED"
   | "TIMEOUT"
   | "VIDEO_TOO_LONG"
+  | "VIDEO_TOO_LARGE"
   | "INTERNAL_ERROR";
 
 export type ImportSuccessResponse = {
