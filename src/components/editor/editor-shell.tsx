@@ -89,7 +89,7 @@ export function EditorShell() {
   }, [isDirty]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:flex-none lg:overflow-hidden">
       <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-950 px-4 sm:px-6">
         <h1 className="text-sm font-medium text-zinc-300">Editor</h1>
         <div className="flex items-center gap-2">
