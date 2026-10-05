@@ -10,7 +10,9 @@ import {
 } from "react";
 import { Player } from "@remotion/player";
 import type { PlayerRef } from "@remotion/player";
+import { useRouter } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
+import { Button } from "@/components/ui/button";
 import { ClipComposition } from "@/remotion/compositions/clip-composition";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import { createClipRenderInput } from "@/remotion/clip-render-input";
@@ -26,6 +28,7 @@ import type { VideoTransform } from "@/types/editor";
 
 type PreviewPanelProps = {
   playerRef: RefObject<PlayerRef | null>;
+  onPlayerReady: () => void;
 };
 
 type DragState = {
@@ -40,7 +43,8 @@ type DragState = {
 
 const CLICK_MOVE_THRESHOLD_PX = 4;
 
-export function PreviewPanel({ playerRef }: PreviewPanelProps) {
+export function PreviewPanel({ playerRef, onPlayerReady }: PreviewPanelProps) {
+  const router = useRouter();
   const document = useEditorStore(useShallow(selectEditorDocument));
   const durationInFrames = useEditorStore(selectDurationInFrames);
   const selectedTextLayerId = useEditorStore(
@@ -53,12 +57,17 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
   const dragStateRef = useRef<DragState | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewWidth, setPreviewWidth] = useState(0);
+  const [checkedSrc, setCheckedSrc] = useState<string | null>(null);
+  const [unavailableSrc, setUnavailableSrc] = useState<string | null>(null);
+  const mediaSrc = document.media.src;
 
   const sourceSize = getSourceSize(document.sourceMetadata);
   const canvasSize = getCanvasSize(document.aspectRatio, sourceSize);
   const renderInput = createClipRenderInput(document);
   const { transform, textLayers } = renderInput;
   const previewScale = previewWidth > 0 ? previewWidth / canvasSize.width : 0;
+  const isSourceChecked = checkedSrc === mediaSrc;
+  const isSourceUnavailable = unavailableSrc === mediaSrc;
 
   useEffect(() => {
     const element = surfaceRef.current;
@@ -77,6 +86,34 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(mediaSrc, { method: "HEAD", cache: "no-store" })
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCheckedSrc(mediaSrc);
+        if (!response.ok) {
+          setUnavailableSrc(mediaSrc);
+        }
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setCheckedSrc(mediaSrc);
+        setUnavailableSrc(mediaSrc);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaSrc]);
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) {
@@ -171,30 +208,52 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
         onPointerUp={(event) => finishPointerInteraction(event, true)}
         onPointerCancel={(event) => finishPointerInteraction(event, false)}
       >
-        <Player
-          ref={playerRef}
-          component={ClipComposition}
-          inputProps={renderInput}
-          durationInFrames={durationInFrames}
-          compositionWidth={canvasSize.width}
-          compositionHeight={canvasSize.height}
-          fps={CLIP_COMPOSITION_FPS}
-          controls={false}
-          clickToPlay={false}
-          doubleClickToFullscreen={false}
-          spaceKeyToPlayOrPause={false}
-          loop={false}
-          acknowledgeRemotionLicense
-          style={{ width: "100%", height: "100%" }}
-        />
-        <TextLayerOverlay
-          textLayers={textLayers}
-          selectedTextLayerId={selectedTextLayerId}
-          canvasSize={canvasSize}
-          previewScale={previewScale}
-          onSelectTextLayer={selectTextLayer}
-          onTextLayerChange={updateTextLayer}
-        />
+        {isSourceChecked && !isSourceUnavailable ? (
+          <>
+            <Player
+              ref={(instance) => {
+                playerRef.current = instance;
+                if (instance) {
+                  onPlayerReady();
+                }
+              }}
+              component={ClipComposition}
+              inputProps={renderInput}
+              durationInFrames={durationInFrames}
+              compositionWidth={canvasSize.width}
+              compositionHeight={canvasSize.height}
+              fps={CLIP_COMPOSITION_FPS}
+              controls={false}
+              clickToPlay={false}
+              doubleClickToFullscreen={false}
+              spaceKeyToPlayOrPause={false}
+              loop={false}
+              acknowledgeRemotionLicense
+              style={{ width: "100%", height: "100%" }}
+            />
+            <TextLayerOverlay
+              textLayers={textLayers}
+              selectedTextLayerId={selectedTextLayerId}
+              canvasSize={canvasSize}
+              previewScale={previewScale}
+              onSelectTextLayer={selectTextLayer}
+              onTextLayerChange={updateTextLayer}
+            />
+          </>
+        ) : null}
+        {isSourceUnavailable ? (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/85 px-4 text-center"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <p className="text-xs leading-5 text-zinc-300">
+              Source video is no longer available. Import it again.
+            </p>
+            <Button size="sm" onClick={() => router.push("/")}>
+              Import video
+            </Button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

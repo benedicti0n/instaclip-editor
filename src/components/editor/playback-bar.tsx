@@ -10,9 +10,10 @@ import { selectDurationInFrames } from "@/store/editor-selectors";
 
 type PlaybackBarProps = {
   playerRef: RefObject<PlayerRef | null>;
+  isPlayerReady: boolean;
 };
 
-export function PlaybackBar({ playerRef }: PlaybackBarProps) {
+export function PlaybackBar({ playerRef, isPlayerReady }: PlaybackBarProps) {
   const durationInFrames = useEditorStore(selectDurationInFrames);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -47,7 +48,7 @@ export function PlaybackBar({ playerRef }: PlaybackBarProps) {
       player.removeEventListener("pause", handlePause);
       player.removeEventListener("ended", handleEnded);
     };
-  }, [playerRef, durationInFrames]);
+  }, [playerRef, durationInFrames, isPlayerReady]);
 
   function handleSeek(event: ChangeEvent<HTMLInputElement>) {
     const frame = Number(event.target.value);

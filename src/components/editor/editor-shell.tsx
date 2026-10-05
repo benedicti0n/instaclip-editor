@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PlayerRef } from "@remotion/player";
 import { InspectorPanel } from "./inspector-panel";
@@ -18,6 +18,7 @@ const CAPTION_FILE_NAME = "caption.txt";
 export function EditorShell() {
   const router = useRouter();
   const playerRef = useRef<PlayerRef>(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
   useEditorKeyboard();
   const mediaSrc = useEditorStore((state) => state.media.src);
   const mediaKind = useEditorStore((state) => state.media.kind);
@@ -168,10 +169,13 @@ export function EditorShell() {
         </p>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <PreviewPanel playerRef={playerRef} />
+        <PreviewPanel
+          playerRef={playerRef}
+          onPlayerReady={() => setIsPlayerReady(true)}
+        />
         <InspectorPanel />
       </div>
-      <PlaybackBar playerRef={playerRef} />
+      <PlaybackBar playerRef={playerRef} isPlayerReady={isPlayerReady} />
     </div>
   );
 }
