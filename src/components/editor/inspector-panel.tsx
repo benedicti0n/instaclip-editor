@@ -35,6 +35,7 @@ export function InspectorPanel() {
   );
   const selectedTextLayer = useEditorStore(selectSelectedTextLayer);
   const hasTextLayers = useEditorStore(selectHasTextLayers);
+  const sourceMetadata = useEditorStore((state) => state.sourceMetadata);
   const addTextLayer = useEditorStore((state) => state.addTextLayer);
   const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
   const deleteTextLayer = useEditorStore((state) => state.deleteTextLayer);
@@ -296,6 +297,22 @@ export function InspectorPanel() {
               : "Add text to place it over the video."}
           </p>
         )}
+      </InspectorSection>
+      <InspectorSection title="Source">
+        <dl className="space-y-2 text-xs">
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-zinc-500">Resolution</dt>
+            <dd className="tabular-nums text-zinc-400">
+              {sourceMetadata.width} × {sourceMetadata.height}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-zinc-500">Duration</dt>
+            <dd className="tabular-nums text-zinc-400">
+              {sourceMetadata.durationInSeconds.toFixed(1)} sec
+            </dd>
+          </div>
+        </dl>
       </InspectorSection>
     </aside>
   );
