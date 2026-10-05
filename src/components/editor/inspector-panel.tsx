@@ -265,6 +265,25 @@ export function InspectorPanel({
                 })}
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="text-shadow"
+                type="checkbox"
+                checked={selectedTextLayer.hasShadow}
+                onChange={(event) =>
+                  onTextLayerChange(selectedTextLayer.id, {
+                    hasShadow: event.target.checked,
+                  })
+                }
+                className="h-3.5 w-3.5 cursor-pointer accent-zinc-300"
+              />
+              <label
+                htmlFor="text-shadow"
+                className="text-xs font-medium text-zinc-500"
+              >
+                Shadow
+              </label>
+            </div>
           </div>
         ) : (
           <p className="mt-3 text-xs leading-5 text-zinc-500">
