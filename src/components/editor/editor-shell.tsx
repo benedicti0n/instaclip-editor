@@ -113,9 +113,8 @@ export function EditorShell() {
                 ? "Download caption"
                 : "Download caption (no caption available)"
             }
-            title={hasCaption ? undefined : "No caption available"}
           >
-            Download caption
+            {hasCaption ? "Download caption" : "No caption"}
           </Button>
           {isExporting ? (
             <Button variant="outline" size="sm" onClick={cancelExport}>
