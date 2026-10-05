@@ -1,4 +1,4 @@
-import type { VideoMetadata } from "@/types/editor";
+import type { MediaSource, VideoMetadata } from "@/types/editor";
 
 export type ImportErrorCode =
   | "INVALID_REQUEST"
@@ -11,8 +11,7 @@ export type ImportErrorCode =
 
 export type ImportSuccessResponse = {
   importId: string;
-  mediaUrl: string;
-  caption: string;
+  media: MediaSource;
   metadata: VideoMetadata;
 };
 

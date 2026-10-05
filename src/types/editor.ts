@@ -30,10 +30,13 @@ export type VideoMetadata = {
 
 /**
  * The media currently loaded into the editor. Phase 6 can replace the sample
- * fixture by pointing `src` at an imported video.
+ * fixture by pointing `src` at an imported video. `caption` holds the original
+ * Instagram post caption when one is available (empty string otherwise).
  */
 export type MediaSource = {
   src: string;
+  caption: string;
+  originalUrl?: string;
 };
 
 /**

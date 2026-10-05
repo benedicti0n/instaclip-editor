@@ -10,6 +10,7 @@ export const SAMPLE_VIDEO_DURATION_IN_SECONDS = 8;
 
 export const SAMPLE_MEDIA: MediaSource = {
   src: SAMPLE_VIDEO_SRC,
+  caption: "",
 };
 
 export const SAMPLE_VIDEO_METADATA: VideoMetadata = {

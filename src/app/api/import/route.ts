@@ -97,8 +97,11 @@ export async function POST(request: Request) {
 
     const response: ImportSuccessResponse = {
       importId,
-      mediaUrl: `/api/imports/${importId}/video`,
-      caption: extracted.description,
+      media: {
+        src: `/api/imports/${importId}/video`,
+        caption: extracted.description,
+        originalUrl: validation.normalizedUrl,
+      },
       metadata: {
         durationInSeconds: extracted.durationInSeconds,
         width: extracted.width,
