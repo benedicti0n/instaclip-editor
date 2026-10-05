@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# runtime imports
+/.tmp/
+
 # production
 /build
 
