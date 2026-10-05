@@ -13,6 +13,10 @@ export const DEFAULT_TEXT_LAYER: Omit<TextLayer, "id"> = {
   hasShadow: true,
 };
 
+export const MIN_TEXT_FONT_SIZE = 24;
+
+export const MAX_TEXT_FONT_SIZE = 200;
+
 export const TEXT_FONT_STACKS: Record<TextFontFamily, string> = {
   geist: "var(--font-geist-sans), system-ui, sans-serif",
   arial: "Arial, Helvetica, sans-serif",

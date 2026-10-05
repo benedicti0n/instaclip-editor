@@ -5,6 +5,7 @@ import {
   MAX_VIDEO_SCALE,
   MIN_VIDEO_SCALE,
 } from "@/lib/editor";
+import { MAX_TEXT_FONT_SIZE, MIN_TEXT_FONT_SIZE } from "@/lib/text-layer";
 import type { AspectRatioPreset, TextLayer } from "@/types/editor";
 
 type InspectorPanelProps = {
@@ -119,6 +120,34 @@ export function InspectorPanel({
                 }
                 placeholder="Add your text"
                 className="mt-2 w-full resize-y rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="text-size"
+                  className="text-xs font-medium text-zinc-500"
+                >
+                  Size
+                </label>
+                <span className="text-xs tabular-nums text-zinc-400">
+                  {selectedTextLayer.fontSize}px
+                </span>
+              </div>
+              <input
+                id="text-size"
+                type="range"
+                min={MIN_TEXT_FONT_SIZE}
+                max={MAX_TEXT_FONT_SIZE}
+                step={1}
+                value={selectedTextLayer.fontSize}
+                onChange={(event) =>
+                  onTextLayerChange(selectedTextLayer.id, {
+                    fontSize: Number(event.target.value),
+                  })
+                }
+                aria-valuetext={`${selectedTextLayer.fontSize} pixels`}
+                className="mt-2 w-full cursor-pointer accent-zinc-300"
               />
             </div>
           </div>
