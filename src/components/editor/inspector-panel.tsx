@@ -31,6 +31,7 @@ type InspectorPanelProps = {
   selectedTextLayer: TextLayer | null;
   onAddTextLayer: () => void;
   onTextLayerChange: (id: string, patch: Partial<TextLayer>) => void;
+  onDeleteTextLayer: () => void;
 };
 
 export function InspectorPanel({
@@ -42,6 +43,7 @@ export function InspectorPanel({
   selectedTextLayer,
   onAddTextLayer,
   onTextLayerChange,
+  onDeleteTextLayer,
 }: InspectorPanelProps) {
   return (
     <aside
@@ -284,6 +286,14 @@ export function InspectorPanel({
                 Shadow
               </label>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={onDeleteTextLayer}
+            >
+              Delete text
+            </Button>
           </div>
         ) : (
           <p className="mt-3 text-xs leading-5 text-zinc-500">

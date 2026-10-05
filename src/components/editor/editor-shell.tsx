@@ -95,6 +95,25 @@ export function EditorShell() {
     setSelectedTextLayerId(id);
   }
 
+  function handleDeleteTextLayer() {
+    if (!selectedTextLayerId) {
+      return;
+    }
+
+    const selectedIndex = textLayers.findIndex(
+      (layer) => layer.id === selectedTextLayerId,
+    );
+    const remainingLayers = textLayers.filter(
+      (layer) => layer.id !== selectedTextLayerId,
+    );
+    const nextSelected =
+      remainingLayers[Math.min(selectedIndex, remainingLayers.length - 1)] ??
+      null;
+
+    setTextLayers(remainingLayers);
+    setSelectedTextLayerId(nextSelected?.id ?? null);
+  }
+
   function handleTextLayerChange(id: string, patch: Partial<TextLayer>) {
     setTextLayers((layers) =>
       layers.map((layer) =>
@@ -176,6 +195,7 @@ export function EditorShell() {
           selectedTextLayer={selectedTextLayer}
           onAddTextLayer={handleAddTextLayer}
           onTextLayerChange={handleTextLayerChange}
+          onDeleteTextLayer={handleDeleteTextLayer}
         />
       </div>
       <PlaybackBar
