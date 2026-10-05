@@ -10,10 +10,13 @@ import {
 } from "@remotion/web-renderer";
 import { ClipComposition } from "@/remotion/compositions/clip-composition";
 import { createExportConfiguration } from "@/remotion/export-config";
+import { downloadBlob } from "@/lib/download";
 import { selectEditorDocument } from "@/store/editor-selectors";
 import { useEditorStore } from "@/store/editor-store";
 
 export type VideoExportStatus = "idle" | "rendering" | "success" | "error";
+
+const EXPORT_FILE_NAME = "edited-video.mp4";
 
 const EXPORT_CONTAINER: WebRendererContainer = "mp4";
 
@@ -85,7 +88,8 @@ export function useVideoExport() {
         },
       });
 
-      await result.getBlob();
+      const blob = await result.getBlob();
+      downloadBlob(blob, EXPORT_FILE_NAME);
       setStatus("success");
     } catch (caught) {
       console.error("[export] render failed", caught);
