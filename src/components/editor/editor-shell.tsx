@@ -6,32 +6,30 @@ import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
-import {
-  clampVideoTransform,
-  getCanvasSize,
-  DEFAULT_VIDEO_TRANSFORM,
-} from "@/lib/editor";
+import { clampVideoTransform, getCanvasSize } from "@/lib/editor";
 import { getVideoMetadata } from "@/lib/media";
-import { SAMPLE_VIDEO_METADATA, SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
+import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
 import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
+import { useEditorStore } from "@/store/editor-store";
 import type {
   AspectRatioPreset,
   TextLayer,
-  VideoMetadata,
   VideoSize,
-  VideoTransform,
 } from "@/types/editor";
 
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
-  const [aspectRatio, setAspectRatio] = useState<AspectRatioPreset>("original");
-  const [videoTransform, setVideoTransform] = useState<VideoTransform>(
-    DEFAULT_VIDEO_TRANSFORM,
+  const aspectRatio = useEditorStore((state) => state.aspectRatio);
+  const videoTransform = useEditorStore((state) => state.videoTransform);
+  const sourceMetadata = useEditorStore((state) => state.sourceMetadata);
+  const setAspectRatio = useEditorStore((state) => state.setAspectRatio);
+  const setVideoTransform = useEditorStore((state) => state.setVideoTransform);
+  const setVideoScale = useEditorStore((state) => state.setVideoScale);
+  const resetVideoTransform = useEditorStore(
+    (state) => state.resetVideoTransform,
   );
-  const [sourceMetadata, setSourceMetadata] = useState<VideoMetadata>(
-    SAMPLE_VIDEO_METADATA,
-  );
+  const setSourceMetadata = useEditorStore((state) => state.setSourceMetadata);
   const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
   const [selectedTextLayerId, setSelectedTextLayerId] = useState<string | null>(
     null,
@@ -58,17 +56,10 @@ export function EditorShell() {
     Math.round(sourceMetadata.durationInSeconds * CLIP_COMPOSITION_FPS),
   );
 
-  function handleTransformChange(next: VideoTransform) {
-    setVideoTransform(clampVideoTransform(next, sourceSize, canvasSize));
-  }
-
   function handleAspectRatioChange(next: AspectRatioPreset) {
     const nextCanvasSize = getCanvasSize(next, sourceSize);
 
     setAspectRatio(next);
-    setVideoTransform((current) =>
-      clampVideoTransform(current, sourceSize, nextCanvasSize),
-    );
     setTextLayers((layers) =>
       layers.map((layer) => clampTextLayerToCanvas(layer, nextCanvasSize)),
     );
@@ -114,29 +105,6 @@ export function EditorShell() {
     );
   }
 
-  function handleScaleChange(nextScale: number) {
-    const ratio =
-      clampedVideoTransform.scale > 0
-        ? nextScale / clampedVideoTransform.scale
-        : 1;
-
-    setVideoTransform(
-      clampVideoTransform(
-        {
-          x: clampedVideoTransform.x * ratio,
-          y: clampedVideoTransform.y * ratio,
-          scale: nextScale,
-        },
-        sourceSize,
-        canvasSize,
-      ),
-    );
-  }
-
-  function handleResetFraming() {
-    setVideoTransform(DEFAULT_VIDEO_TRANSFORM);
-  }
-
   useEffect(() => {
     let cancelled = false;
 
@@ -153,7 +121,7 @@ export function EditorShell() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setSourceMetadata]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:overflow-hidden">
@@ -170,7 +138,7 @@ export function EditorShell() {
           canvasSize={canvasSize}
           sourceSize={sourceSize}
           transform={clampedVideoTransform}
-          onTransformChange={handleTransformChange}
+          onTransformChange={setVideoTransform}
           textLayers={clampedTextLayers}
           selectedTextLayerId={selectedTextLayerId}
           onSelectTextLayer={handleSelectTextLayer}
@@ -180,8 +148,8 @@ export function EditorShell() {
           aspectRatio={aspectRatio}
           onAspectRatioChange={handleAspectRatioChange}
           scale={clampedVideoTransform.scale}
-          onScaleChange={handleScaleChange}
-          onResetFraming={handleResetFraming}
+          onScaleChange={setVideoScale}
+          onResetFraming={resetVideoTransform}
           selectedTextLayer={selectedTextLayer}
           onAddTextLayer={handleAddTextLayer}
           onTextLayerChange={handleTextLayerChange}
