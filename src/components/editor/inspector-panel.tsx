@@ -8,6 +8,7 @@ import {
 import {
   MAX_TEXT_FONT_SIZE,
   MIN_TEXT_FONT_SIZE,
+  TEXT_ALIGNMENT_OPTIONS,
   TEXT_FONT_OPTIONS,
   TEXT_WEIGHT_OPTIONS,
 } from "@/lib/text-layer";
@@ -210,6 +211,59 @@ export function InspectorPanel({
                 aria-valuetext={`${selectedTextLayer.fontSize} pixels`}
                 className="mt-2 w-full cursor-pointer accent-zinc-300"
               />
+            </div>
+            <div>
+              <label
+                htmlFor="text-color"
+                className="text-xs font-medium text-zinc-500"
+              >
+                Color
+              </label>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  id="text-color"
+                  type="color"
+                  value={selectedTextLayer.color}
+                  onChange={(event) =>
+                    onTextLayerChange(selectedTextLayer.id, {
+                      color: event.target.value,
+                    })
+                  }
+                  className="h-8 w-10 cursor-pointer rounded-md border border-zinc-800 bg-zinc-900 p-1"
+                />
+                <span className="text-xs tabular-nums text-zinc-400">
+                  {selectedTextLayer.color.toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-zinc-500">Alignment</p>
+              <div
+                role="group"
+                aria-label="Text alignment"
+                className="mt-2 grid grid-cols-3 gap-2"
+              >
+                {TEXT_ALIGNMENT_OPTIONS.map(({ value, label }) => {
+                  const isSelected = selectedTextLayer.textAlign === value;
+
+                  return (
+                    <Button
+                      key={value}
+                      variant="outline"
+                      size="sm"
+                      aria-pressed={isSelected}
+                      onClick={() =>
+                        onTextLayerChange(selectedTextLayer.id, {
+                          textAlign: value,
+                        })
+                      }
+                      className={isSelected ? "bg-zinc-800" : undefined}
+                    >
+                      {label}
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : (

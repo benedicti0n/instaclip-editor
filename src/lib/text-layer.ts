@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type {
+  TextAlignment,
   TextFontFamily,
   TextFontWeight,
   TextLayer,
@@ -46,6 +47,15 @@ export const TEXT_WEIGHT_OPTIONS: ReadonlyArray<{
   { value: 400, label: "Regular" },
   { value: 600, label: "Semibold" },
   { value: 700, label: "Bold" },
+];
+
+export const TEXT_ALIGNMENT_OPTIONS: ReadonlyArray<{
+  value: TextAlignment;
+  label: string;
+}> = [
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
 ];
 
 export function createTextLayer(id: string): TextLayer {
