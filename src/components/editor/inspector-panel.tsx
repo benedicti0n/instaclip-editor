@@ -5,8 +5,21 @@ import {
   MAX_VIDEO_SCALE,
   MIN_VIDEO_SCALE,
 } from "@/lib/editor";
-import { MAX_TEXT_FONT_SIZE, MIN_TEXT_FONT_SIZE } from "@/lib/text-layer";
-import type { AspectRatioPreset, TextLayer } from "@/types/editor";
+import {
+  MAX_TEXT_FONT_SIZE,
+  MIN_TEXT_FONT_SIZE,
+  TEXT_FONT_OPTIONS,
+  TEXT_WEIGHT_OPTIONS,
+} from "@/lib/text-layer";
+import type {
+  AspectRatioPreset,
+  TextFontFamily,
+  TextFontWeight,
+  TextLayer,
+} from "@/types/editor";
+
+const SELECT_CLASSES =
+  "mt-2 w-full rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500";
 
 type InspectorPanelProps = {
   aspectRatio: AspectRatioPreset;
@@ -121,6 +134,54 @@ export function InspectorPanel({
                 placeholder="Add your text"
                 className="mt-2 w-full resize-y rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               />
+            </div>
+            <div>
+              <label
+                htmlFor="text-font"
+                className="text-xs font-medium text-zinc-500"
+              >
+                Font
+              </label>
+              <select
+                id="text-font"
+                value={selectedTextLayer.fontFamily}
+                onChange={(event) =>
+                  onTextLayerChange(selectedTextLayer.id, {
+                    fontFamily: event.target.value as TextFontFamily,
+                  })
+                }
+                className={SELECT_CLASSES}
+              >
+                {TEXT_FONT_OPTIONS.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="text-weight"
+                className="text-xs font-medium text-zinc-500"
+              >
+                Weight
+              </label>
+              <select
+                id="text-weight"
+                value={selectedTextLayer.fontWeight}
+                onChange={(event) =>
+                  onTextLayerChange(selectedTextLayer.id, {
+                    fontWeight: Number(event.target.value) as TextFontWeight,
+                  })
+                }
+                className={SELECT_CLASSES}
+              >
+                {TEXT_WEIGHT_OPTIONS.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <div className="flex items-center justify-between">

@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
-import type { TextFontFamily, TextLayer, VideoSize } from "@/types/editor";
+import type {
+  TextFontFamily,
+  TextFontWeight,
+  TextLayer,
+  VideoSize,
+} from "@/types/editor";
 
 export const DEFAULT_TEXT_LAYER: Omit<TextLayer, "id"> = {
   text: "Add your text",
@@ -23,6 +28,25 @@ export const TEXT_FONT_STACKS: Record<TextFontFamily, string> = {
   georgia: "Georgia, 'Times New Roman', serif",
   courier: "'Courier New', Courier, monospace",
 };
+
+export const TEXT_FONT_OPTIONS: ReadonlyArray<{
+  value: TextFontFamily;
+  label: string;
+}> = [
+  { value: "geist", label: "Geist" },
+  { value: "arial", label: "Arial" },
+  { value: "georgia", label: "Georgia" },
+  { value: "courier", label: "Courier New" },
+];
+
+export const TEXT_WEIGHT_OPTIONS: ReadonlyArray<{
+  value: TextFontWeight;
+  label: string;
+}> = [
+  { value: 400, label: "Regular" },
+  { value: 600, label: "Semibold" },
+  { value: 700, label: "Bold" },
+];
 
 export function createTextLayer(id: string): TextLayer {
   return { id, ...DEFAULT_TEXT_LAYER };
