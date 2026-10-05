@@ -19,3 +19,48 @@ ffmpeg -y -f lavfi -i "testsrc2=size=1080x1920:rate=30" -t 8 \
 ```
 
 Properties: 1080×1920, 30 fps, 8 seconds (240 frames), H.264/yuv420p, no audio.
+
+## Instagram importing (local development)
+
+The import API uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) as a system
+executable. It is not bundled with the app.
+
+Install it with one of:
+
+```bash
+brew install yt-dlp
+# or
+pipx install yt-dlp
+```
+
+Verify the installation:
+
+```bash
+yt-dlp --version
+```
+
+If `yt-dlp` is not on `PATH`, the import API responds with
+`503 YTDLP_UNAVAILABLE` and a message pointing at this section. The adapter
+targets modern yt-dlp releases (it relies on `--write-info-json`,
+`--merge-output-format`, `--no-playlist`, and `--format`).
+
+FFmpeg is recommended:
+
+- `ffprobe` (from FFmpeg) is used to read authoritative video dimensions and
+  duration after download. Without it, the adapter falls back to yt-dlp's
+  metadata.
+- yt-dlp itself may need `ffmpeg` to merge separate video/audio streams for
+  some posts.
+
+Imported files are written to `.tmp/imports/<uuid>/` (`video.*` plus
+`metadata.json`). The directory is gitignored. Stale imports older than
+24 hours are removed opportunistically when a new import starts.
+
+Current limitations:
+
+- Public Instagram posts only. Private or login-required posts return an error;
+  no cookies or credentials are collected.
+- Only the primary video of a post is imported; carousels are not expanded into
+  a media picker.
+- Instagram occasionally changes its behavior; extractor failures surface as
+  structured API errors rather than silent retries.
