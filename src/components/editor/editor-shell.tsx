@@ -20,6 +20,7 @@ export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
   useEditorKeyboard();
   const mediaSrc = useEditorStore((state) => state.media.src);
+  const mediaKind = useEditorStore((state) => state.media.kind);
   const caption = useEditorStore((state) => state.media.caption);
   const isDirty = useEditorStore(selectIsDocumentDirty);
   const loadSourceMetadata = useEditorStore(
@@ -89,6 +90,24 @@ export function EditorShell() {
 
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
+
+  if (process.env.NODE_ENV === "production" && mediaKind === "sample") {
+    return (
+      <div className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-balance text-zinc-50">
+            No video imported
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-zinc-400">
+            Import an Instagram Reel to start editing it in ClipCrop.
+          </p>
+          <Button className="mt-6" onClick={() => router.push("/")}>
+            Import video
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:flex-none lg:overflow-hidden">

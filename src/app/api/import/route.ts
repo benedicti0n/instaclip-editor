@@ -102,6 +102,7 @@ export async function POST(request: Request) {
     const response: ImportSuccessResponse = {
       importId,
       media: {
+        kind: "imported",
         src: `/api/imports/${importId}/video`,
         caption: extracted.description,
         originalUrl: validation.normalizedUrl,

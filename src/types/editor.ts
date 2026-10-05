@@ -29,11 +29,14 @@ export type VideoMetadata = {
 };
 
 /**
- * The media currently loaded into the editor. Phase 6 can replace the sample
- * fixture by pointing `src` at an imported video. `caption` holds the original
- * Instagram post caption when one is available (empty string otherwise).
+ * The media currently loaded into the editor. `kind` distinguishes the
+ * development fixture from media a user actually imported, so production can
+ * refuse to edit the synthetic sample.
  */
+export type MediaSourceKind = "sample" | "imported";
+
 export type MediaSource = {
+  kind: MediaSourceKind;
   src: string;
   caption: string;
   originalUrl?: string;
