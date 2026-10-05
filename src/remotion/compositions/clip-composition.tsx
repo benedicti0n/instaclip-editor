@@ -1,18 +1,43 @@
-import { AbsoluteFill, Video } from "remotion";
+import { AbsoluteFill, Video, useVideoConfig } from "remotion";
+import { getRenderedVideoSize } from "@/lib/editor";
+import type { VideoTransform } from "@/types/editor";
 
 export const CLIP_COMPOSITION_FPS = 30;
 
 export type ClipCompositionProps = {
   src: string;
+  sourceWidth: number;
+  sourceHeight: number;
+  transform: VideoTransform;
 };
 
-export function ClipComposition({ src }: ClipCompositionProps) {
+export function ClipComposition({
+  src,
+  sourceWidth,
+  sourceHeight,
+  transform,
+}: ClipCompositionProps) {
+  const { width, height } = useVideoConfig();
+  const renderedSize = getRenderedVideoSize(
+    { width: sourceWidth, height: sourceHeight },
+    { width, height },
+    transform.scale,
+  );
+
   return (
-    <AbsoluteFill style={{ backgroundColor: "black" }}>
-      <Video
-        src={src}
-        style={{ width: "100%", height: "100%", objectFit: "contain" }}
-      />
+    <AbsoluteFill style={{ backgroundColor: "black", overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: renderedSize.width,
+          height: renderedSize.height,
+          transform: `translate(-50%, -50%) translate(${transform.x}px, ${transform.y}px)`,
+        }}
+      >
+        <Video src={src} style={{ width: "100%", height: "100%" }} />
+      </div>
     </AbsoluteFill>
   );
 }

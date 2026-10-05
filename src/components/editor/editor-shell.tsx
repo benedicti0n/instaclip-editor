@@ -6,7 +6,7 @@ import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
-import { getCanvasSize } from "@/lib/editor";
+import { getCanvasSize, DEFAULT_VIDEO_TRANSFORM } from "@/lib/editor";
 import { getVideoDurationInSeconds } from "@/lib/media";
 import {
   SAMPLE_VIDEO_DURATION_IN_SECONDS,
@@ -28,10 +28,10 @@ const SOURCE_SIZE: VideoSize = {
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatioPreset>("original");
+  const videoTransform = DEFAULT_VIDEO_TRANSFORM;
   const [durationInFrames, setDurationInFrames] = useState(
     INITIAL_DURATION_IN_FRAMES,
   );
-
   const canvasSize = getCanvasSize(aspectRatio, SOURCE_SIZE);
 
   useEffect(() => {
@@ -67,6 +67,8 @@ export function EditorShell() {
           playerRef={playerRef}
           durationInFrames={durationInFrames}
           canvasSize={canvasSize}
+          sourceSize={SOURCE_SIZE}
+          transform={videoTransform}
         />
         <InspectorPanel
           aspectRatio={aspectRatio}

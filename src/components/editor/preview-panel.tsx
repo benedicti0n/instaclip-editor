@@ -8,21 +8,30 @@ import {
   ClipComposition,
 } from "@/remotion/compositions/clip-composition";
 import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
-import type { VideoSize } from "@/types/editor";
-
-const INPUT_PROPS = { src: SAMPLE_VIDEO_SRC };
+import type { VideoSize, VideoTransform } from "@/types/editor";
 
 type PreviewPanelProps = {
   playerRef: RefObject<PlayerRef | null>;
   durationInFrames: number;
   canvasSize: VideoSize;
+  sourceSize: VideoSize;
+  transform: VideoTransform;
 };
 
 export function PreviewPanel({
   playerRef,
   durationInFrames,
   canvasSize,
+  sourceSize,
+  transform,
 }: PreviewPanelProps) {
+  const inputProps = {
+    src: SAMPLE_VIDEO_SRC,
+    sourceWidth: sourceSize.width,
+    sourceHeight: sourceSize.height,
+    transform,
+  };
+
   return (
     <section
       aria-label="Video preview"
@@ -40,7 +49,7 @@ export function PreviewPanel({
         <Player
           ref={playerRef}
           component={ClipComposition}
-          inputProps={INPUT_PROPS}
+          inputProps={inputProps}
           durationInFrames={durationInFrames}
           compositionWidth={canvasSize.width}
           compositionHeight={canvasSize.height}

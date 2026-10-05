@@ -38,3 +38,26 @@ export function getCanvasSize(
       return { width: 1920, height: 1080 };
   }
 }
+
+export function getCoverScale(
+  sourceSize: VideoSize,
+  canvasSize: VideoSize,
+): number {
+  return Math.max(
+    canvasSize.width / sourceSize.width,
+    canvasSize.height / sourceSize.height,
+  );
+}
+
+export function getRenderedVideoSize(
+  sourceSize: VideoSize,
+  canvasSize: VideoSize,
+  scale: number,
+): VideoSize {
+  const coverScale = getCoverScale(sourceSize, canvasSize);
+
+  return {
+    width: sourceSize.width * coverScale * scale,
+    height: sourceSize.height * coverScale * scale,
+  };
+}
