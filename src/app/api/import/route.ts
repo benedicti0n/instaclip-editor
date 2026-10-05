@@ -29,6 +29,10 @@ import type {
 
 export const runtime = "nodejs";
 
+const MAX_IMPORT_BODY_BYTES = 8 * 1024;
+
+const MAX_URL_LENGTH = 2048;
+
 class ImportPolicyError extends Error {
   readonly code: ImportErrorCode;
   readonly status: number;
@@ -65,6 +69,15 @@ function statusForYtDlpError(code: YtDlpErrorCode): number {
 }
 
 export async function POST(request: Request) {
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > MAX_IMPORT_BODY_BYTES) {
+    return errorResponse(
+      413,
+      "INVALID_REQUEST",
+      "The request body is too large.",
+    );
+  }
+
   let payload: unknown;
   try {
     payload = await request.json();
@@ -76,14 +89,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const url =
-    typeof payload === "object" &&
-    payload !== null &&
-    typeof (payload as { url?: unknown }).url === "string"
-      ? (payload as { url: string }).url
-      : "";
+  if (
+    typeof payload !== "object" ||
+    payload === null ||
+    Array.isArray(payload)
+  ) {
+    return errorResponse(
+      400,
+      "INVALID_REQUEST",
+      "Send a JSON body with a url field.",
+    );
+  }
 
-  const validation = validateInstagramUrl(url);
+  const rawUrl = (payload as { url?: unknown }).url;
+  if (typeof rawUrl !== "string") {
+    return errorResponse(
+      400,
+      "INVALID_REQUEST",
+      "Send a JSON body with a url field.",
+    );
+  }
+
+  if (rawUrl.length > MAX_URL_LENGTH) {
+    return errorResponse(400, "INVALID_URL", "The URL is too long.");
+  }
+
+  const validation = validateInstagramUrl(rawUrl);
   if (!validation.valid) {
     return errorResponse(400, "INVALID_URL", validation.reason);
   }
