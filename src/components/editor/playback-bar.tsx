@@ -91,7 +91,7 @@ export function PlaybackBar({ playerRef }: PlaybackBarProps) {
         value={currentFrame}
         onChange={handleSeek}
         aria-label="Seek"
-        className="min-w-0 flex-1 cursor-pointer accent-zinc-300"
+        className="min-w-0 flex-1 cursor-pointer accent-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
       />
       <span className="shrink-0 text-xs tabular-nums text-zinc-500">
         {formatTimecode(currentFrame / CLIP_COMPOSITION_FPS)} /{" "}

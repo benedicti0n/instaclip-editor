@@ -90,7 +90,7 @@ export function InspectorPanel() {
             value={scale}
             onChange={(event) => setVideoScale(Number(event.target.value))}
             aria-valuetext={`${Math.round(scale * 100)}%`}
-            className="mt-2 w-full cursor-pointer accent-zinc-300"
+            className="mt-2 w-full cursor-pointer accent-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
           />
         </div>
         <Button
@@ -206,7 +206,7 @@ export function InspectorPanel() {
                   })
                 }
                 aria-valuetext={`${selectedTextLayer.fontSize} pixels`}
-                className="mt-2 w-full cursor-pointer accent-zinc-300"
+                className="mt-2 w-full cursor-pointer accent-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               />
             </div>
             <div>
@@ -226,7 +226,7 @@ export function InspectorPanel() {
                       color: event.target.value,
                     })
                   }
-                  className="h-8 w-10 cursor-pointer rounded-md border border-zinc-800 bg-zinc-900 p-1"
+                  className="h-8 w-10 cursor-pointer rounded-md border border-zinc-800 bg-zinc-900 p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
                 />
                 <span className="text-xs tabular-nums text-zinc-400">
                   {selectedTextLayer.color.toUpperCase()}
@@ -272,7 +272,7 @@ export function InspectorPanel() {
                     hasShadow: event.target.checked,
                   })
                 }
-                className="h-3.5 w-3.5 cursor-pointer accent-zinc-300"
+                className="h-3.5 w-3.5 cursor-pointer accent-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               />
               <label
                 htmlFor="text-shadow"
