@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { PlayerRef } from "@remotion/player";
 import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
@@ -9,20 +9,20 @@ import { Button } from "@/components/ui/button";
 import { clampVideoTransform, getCanvasSize } from "@/lib/editor";
 import { getVideoMetadata } from "@/lib/media";
 import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
-import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
+import { clampTextLayerToCanvas } from "@/lib/text-layer";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
 import { useEditorStore } from "@/store/editor-store";
-import type {
-  AspectRatioPreset,
-  TextLayer,
-  VideoSize,
-} from "@/types/editor";
+import type { VideoSize } from "@/types/editor";
 
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
   const aspectRatio = useEditorStore((state) => state.aspectRatio);
   const videoTransform = useEditorStore((state) => state.videoTransform);
   const sourceMetadata = useEditorStore((state) => state.sourceMetadata);
+  const textLayers = useEditorStore((state) => state.textLayers);
+  const selectedTextLayerId = useEditorStore(
+    (state) => state.selectedTextLayerId,
+  );
   const setAspectRatio = useEditorStore((state) => state.setAspectRatio);
   const setVideoTransform = useEditorStore((state) => state.setVideoTransform);
   const setVideoScale = useEditorStore((state) => state.setVideoScale);
@@ -30,10 +30,10 @@ export function EditorShell() {
     (state) => state.resetVideoTransform,
   );
   const setSourceMetadata = useEditorStore((state) => state.setSourceMetadata);
-  const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
-  const [selectedTextLayerId, setSelectedTextLayerId] = useState<string | null>(
-    null,
-  );
+  const addTextLayer = useEditorStore((state) => state.addTextLayer);
+  const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
+  const deleteTextLayer = useEditorStore((state) => state.deleteTextLayer);
+  const selectTextLayer = useEditorStore((state) => state.selectTextLayer);
 
   const selectedTextLayer =
     textLayers.find((layer) => layer.id === selectedTextLayerId) ?? null;
@@ -56,53 +56,10 @@ export function EditorShell() {
     Math.round(sourceMetadata.durationInSeconds * CLIP_COMPOSITION_FPS),
   );
 
-  function handleAspectRatioChange(next: AspectRatioPreset) {
-    const nextCanvasSize = getCanvasSize(next, sourceSize);
-
-    setAspectRatio(next);
-    setTextLayers((layers) =>
-      layers.map((layer) => clampTextLayerToCanvas(layer, nextCanvasSize)),
-    );
-  }
-
-  function handleAddTextLayer() {
-    const layer = createTextLayer(crypto.randomUUID());
-
-    setTextLayers((layers) => [...layers, layer]);
-    setSelectedTextLayerId(layer.id);
-  }
-
-  function handleSelectTextLayer(id: string) {
-    setSelectedTextLayerId(id);
-  }
-
   function handleDeleteTextLayer() {
-    if (!selectedTextLayerId) {
-      return;
+    if (selectedTextLayerId) {
+      deleteTextLayer(selectedTextLayerId);
     }
-
-    const selectedIndex = textLayers.findIndex(
-      (layer) => layer.id === selectedTextLayerId,
-    );
-    const remainingLayers = textLayers.filter(
-      (layer) => layer.id !== selectedTextLayerId,
-    );
-    const nextSelected =
-      remainingLayers[Math.min(selectedIndex, remainingLayers.length - 1)] ??
-      null;
-
-    setTextLayers(remainingLayers);
-    setSelectedTextLayerId(nextSelected?.id ?? null);
-  }
-
-  function handleTextLayerChange(id: string, patch: Partial<TextLayer>) {
-    setTextLayers((layers) =>
-      layers.map((layer) =>
-        layer.id === id
-          ? clampTextLayerToCanvas({ ...layer, ...patch }, canvasSize)
-          : layer,
-      ),
-    );
   }
 
   useEffect(() => {
@@ -141,18 +98,18 @@ export function EditorShell() {
           onTransformChange={setVideoTransform}
           textLayers={clampedTextLayers}
           selectedTextLayerId={selectedTextLayerId}
-          onSelectTextLayer={handleSelectTextLayer}
-          onTextLayerChange={handleTextLayerChange}
+          onSelectTextLayer={selectTextLayer}
+          onTextLayerChange={updateTextLayer}
         />
         <InspectorPanel
           aspectRatio={aspectRatio}
-          onAspectRatioChange={handleAspectRatioChange}
+          onAspectRatioChange={setAspectRatio}
           scale={clampedVideoTransform.scale}
           onScaleChange={setVideoScale}
           onResetFraming={resetVideoTransform}
           selectedTextLayer={selectedTextLayer}
-          onAddTextLayer={handleAddTextLayer}
-          onTextLayerChange={handleTextLayerChange}
+          onAddTextLayer={addTextLayer}
+          onTextLayerChange={updateTextLayer}
           onDeleteTextLayer={handleDeleteTextLayer}
         />
       </div>
