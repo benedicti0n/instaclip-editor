@@ -1,19 +1,46 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
 import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
-import { SAMPLE_VIDEO_DURATION_IN_SECONDS } from "@/lib/sample-video";
+import { getVideoDurationInSeconds } from "@/lib/media";
+import {
+  SAMPLE_VIDEO_DURATION_IN_SECONDS,
+  SAMPLE_VIDEO_SRC,
+} from "@/lib/sample-video";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
 
-const DURATION_IN_FRAMES =
+const INITIAL_DURATION_IN_FRAMES =
   SAMPLE_VIDEO_DURATION_IN_SECONDS * CLIP_COMPOSITION_FPS;
 
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
+  const [durationInFrames, setDurationInFrames] = useState(
+    INITIAL_DURATION_IN_FRAMES,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getVideoDurationInSeconds(SAMPLE_VIDEO_SRC)
+      .then((seconds) => {
+        if (!cancelled) {
+          setDurationInFrames(
+            Math.max(1, Math.round(seconds * CLIP_COMPOSITION_FPS)),
+          );
+        }
+      })
+      .catch(() => {
+        // Keep the known fixture duration if metadata cannot be loaded.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:overflow-hidden">
@@ -26,13 +53,13 @@ export function EditorShell() {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <PreviewPanel
           playerRef={playerRef}
-          durationInFrames={DURATION_IN_FRAMES}
+          durationInFrames={durationInFrames}
         />
         <InspectorPanel />
       </div>
       <PlaybackBar
         playerRef={playerRef}
-        durationInFrames={DURATION_IN_FRAMES}
+        durationInFrames={durationInFrames}
         fps={CLIP_COMPOSITION_FPS}
       />
     </div>
