@@ -46,6 +46,11 @@ export function EditorShell() {
     height: sourceMetadata.height,
   };
   const canvasSize = getCanvasSize(aspectRatio, sourceSize);
+  const clampedVideoTransform = clampVideoTransform(
+    videoTransform,
+    sourceSize,
+    canvasSize,
+  );
   const durationInFrames = Math.max(
     1,
     Math.round(sourceMetadata.durationInSeconds * CLIP_COMPOSITION_FPS),
@@ -55,20 +60,32 @@ export function EditorShell() {
     setVideoTransform(clampVideoTransform(next, sourceSize, canvasSize));
   }
 
-  function handleScaleChange(nextScale: number) {
-    setVideoTransform((current) => {
-      const ratio = current.scale > 0 ? nextScale / current.scale : 1;
+  function handleAspectRatioChange(next: AspectRatioPreset) {
+    const nextCanvasSize = getCanvasSize(next, sourceSize);
 
-      return clampVideoTransform(
+    setAspectRatio(next);
+    setVideoTransform((current) =>
+      clampVideoTransform(current, sourceSize, nextCanvasSize),
+    );
+  }
+
+  function handleScaleChange(nextScale: number) {
+    const ratio =
+      clampedVideoTransform.scale > 0
+        ? nextScale / clampedVideoTransform.scale
+        : 1;
+
+    setVideoTransform(
+      clampVideoTransform(
         {
-          x: current.x * ratio,
-          y: current.y * ratio,
+          x: clampedVideoTransform.x * ratio,
+          y: clampedVideoTransform.y * ratio,
           scale: nextScale,
         },
         sourceSize,
         canvasSize,
-      );
-    });
+      ),
+    );
   }
 
   function handleResetFraming() {
@@ -107,13 +124,13 @@ export function EditorShell() {
           durationInFrames={durationInFrames}
           canvasSize={canvasSize}
           sourceSize={sourceSize}
-          transform={videoTransform}
+          transform={clampedVideoTransform}
           onTransformChange={handleTransformChange}
         />
         <InspectorPanel
           aspectRatio={aspectRatio}
-          onAspectRatioChange={setAspectRatio}
-          scale={videoTransform.scale}
+          onAspectRatioChange={handleAspectRatioChange}
+          scale={clampedVideoTransform.scale}
           onScaleChange={handleScaleChange}
           onResetFraming={handleResetFraming}
         />

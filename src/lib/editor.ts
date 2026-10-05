@@ -84,7 +84,10 @@ export function clampVideoTransform(
   sourceSize: VideoSize,
   canvasSize: VideoSize,
 ): VideoTransform {
-  const safeScale = Math.max(MIN_VIDEO_SCALE, transform.scale);
+  const safeScale = Math.min(
+    MAX_VIDEO_SCALE,
+    Math.max(MIN_VIDEO_SCALE, transform.scale),
+  );
   const { maxX, maxY } = getPanBounds(sourceSize, canvasSize, safeScale);
 
   return {
