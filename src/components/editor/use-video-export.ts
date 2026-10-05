@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   canRenderMediaOnWeb,
   renderMediaOnWeb,
@@ -37,6 +37,13 @@ export function useVideoExport() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const isRenderingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const startExport = useCallback(async () => {
     if (isRenderingRef.current) {
@@ -44,6 +51,9 @@ export function useVideoExport() {
     }
 
     isRenderingRef.current = true;
+
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     const document = selectEditorDocument(useEditorStore.getState());
     const config = createExportConfiguration(document);
@@ -82,6 +92,7 @@ export function useVideoExport() {
         container: EXPORT_CONTAINER,
         videoCodec: EXPORT_VIDEO_CODEC,
         audioCodec: EXPORT_AUDIO_CODEC,
+        signal: controller.signal,
         licenseKey: "free-license",
         onProgress: ({ progress: nextProgress }) => {
           setProgress(nextProgress);
@@ -89,16 +100,32 @@ export function useVideoExport() {
       });
 
       const blob = await result.getBlob();
+      if (controller.signal.aborted) {
+        return;
+      }
+
       downloadBlob(blob, EXPORT_FILE_NAME);
       setStatus("success");
     } catch (caught) {
+      if (controller.signal.aborted) {
+        setStatus("idle");
+        setProgress(0);
+        setError(null);
+        return;
+      }
+
       console.error("[export] render failed", caught);
       setError(getExportErrorMessage(caught));
       setStatus("error");
     } finally {
       isRenderingRef.current = false;
+      abortRef.current = null;
     }
   }, []);
 
-  return { status, progress, error, startExport };
+  const cancelExport = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  return { status, progress, error, startExport, cancelExport };
 }
