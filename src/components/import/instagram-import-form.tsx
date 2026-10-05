@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
 
 export function InstagramImportForm() {
   const [url, setUrl] = useState("");
@@ -34,13 +35,9 @@ export function InstagramImportForm() {
         ClipCrop will import the video and its original caption so you can crop
         and reposition it before exporting.
       </p>
-      <button
-        type="submit"
-        disabled={!canImport}
-        className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-900 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-      >
+      <Button type="submit" disabled={!canImport} className="mt-5 w-full">
         Import video
-      </button>
+      </Button>
     </form>
   );
 }

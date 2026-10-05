@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 
 const ASPECT_RATIOS = ["Original", "9:16", "4:5", "1:1", "16:9"] as const;
-
-const OPTION_CLASSES =
-  "inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function InspectorPanel() {
   return (
@@ -22,31 +20,28 @@ export function InspectorPanel() {
             const isDefault = ratio === "Original";
 
             return (
-              <button
+              <Button
                 key={ratio}
-                type="button"
+                variant="outline"
+                size="sm"
                 disabled
                 aria-pressed={isDefault}
-                className={`${OPTION_CLASSES} ${
+                className={
                   isDefault
                     ? "border-zinc-600 bg-zinc-800/60 text-zinc-100"
                     : "border-zinc-800 text-zinc-400"
-                }`}
+                }
               >
                 {ratio}
-              </button>
+              </Button>
             );
           })}
         </div>
       </InspectorSection>
       <InspectorSection title="Text">
-        <button
-          type="button"
-          disabled
-          className="inline-flex h-8 w-full items-center justify-center rounded-md border border-zinc-700 px-3 text-xs font-medium text-zinc-200 transition-colors hover:border-zinc-500 hover:text-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button variant="outline" size="sm" disabled className="w-full">
           Add text
-        </button>
+        </Button>
       </InspectorSection>
     </aside>
   );
