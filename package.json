@@ -12,7 +12,9 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@remotion/media": "4.0.532",
     "@remotion/player": "^4.0.532",
+    "@remotion/web-renderer": "4.0.532",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
