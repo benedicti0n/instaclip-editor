@@ -32,8 +32,7 @@ export function InstagramImportForm() {
         className="mt-2 block w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
       />
       <p className="mt-2 text-xs leading-5 text-zinc-500">
-        ClipCrop will import the video and its original caption so you can crop
-        and reposition it before exporting.
+        ClipCrop will import the video and its original caption for editing.
       </p>
       <Button type="submit" disabled={!canImport} className="mt-5 w-full">
         Import video

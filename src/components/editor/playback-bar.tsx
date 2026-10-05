@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export function PlaybackBar() {
   return (
-    <div className="flex shrink-0 items-center gap-3 border-t border-zinc-800 bg-zinc-950 px-4 py-3 sm:gap-4 sm:px-6">
+    <div className="sticky bottom-0 flex shrink-0 items-center gap-3 border-t border-zinc-800 bg-zinc-950 px-4 py-3 sm:gap-4 sm:px-6 lg:static">
       <Button
         variant="outline"
         size="icon"
