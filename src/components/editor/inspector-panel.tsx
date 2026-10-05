@@ -1,9 +1,17 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { ASPECT_RATIO_PRESETS } from "@/lib/editor";
+import type { AspectRatioPreset } from "@/types/editor";
 
-const ASPECT_RATIOS = ["Original", "9:16", "4:5", "1:1", "16:9"] as const;
+type InspectorPanelProps = {
+  aspectRatio: AspectRatioPreset;
+  onAspectRatioChange: (preset: AspectRatioPreset) => void;
+};
 
-export function InspectorPanel() {
+export function InspectorPanel({
+  aspectRatio,
+  onAspectRatioChange,
+}: InspectorPanelProps) {
   return (
     <aside
       aria-label="Inspector"
@@ -16,23 +24,19 @@ export function InspectorPanel() {
           aria-label="Aspect ratio"
           className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2"
         >
-          {ASPECT_RATIOS.map((ratio) => {
-            const isDefault = ratio === "Original";
+          {ASPECT_RATIO_PRESETS.map(({ value, label }) => {
+            const isSelected = value === aspectRatio;
 
             return (
               <Button
-                key={ratio}
+                key={value}
                 variant="outline"
                 size="sm"
-                disabled
-                aria-pressed={isDefault}
-                className={
-                  isDefault
-                    ? "border-zinc-600 bg-zinc-800/60 text-zinc-100"
-                    : "border-zinc-800 text-zinc-400"
-                }
+                aria-pressed={isSelected}
+                onClick={() => onAspectRatioChange(value)}
+                className={isSelected ? "bg-zinc-800" : undefined}
               >
-                {ratio}
+                {label}
               </Button>
             );
           })}

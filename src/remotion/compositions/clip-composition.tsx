@@ -1,7 +1,5 @@
 import { AbsoluteFill, Video } from "remotion";
 
-export const CLIP_COMPOSITION_WIDTH = 1080;
-export const CLIP_COMPOSITION_HEIGHT = 1920;
 export const CLIP_COMPOSITION_FPS = 30;
 
 export type ClipCompositionProps = {

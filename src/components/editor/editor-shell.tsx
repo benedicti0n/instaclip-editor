@@ -6,21 +6,33 @@ import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
+import { getCanvasSize } from "@/lib/editor";
 import { getVideoDurationInSeconds } from "@/lib/media";
 import {
   SAMPLE_VIDEO_DURATION_IN_SECONDS,
+  SAMPLE_VIDEO_HEIGHT,
   SAMPLE_VIDEO_SRC,
+  SAMPLE_VIDEO_WIDTH,
 } from "@/lib/sample-video";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
+import type { AspectRatioPreset, VideoSize } from "@/types/editor";
 
 const INITIAL_DURATION_IN_FRAMES =
   SAMPLE_VIDEO_DURATION_IN_SECONDS * CLIP_COMPOSITION_FPS;
 
+const SOURCE_SIZE: VideoSize = {
+  width: SAMPLE_VIDEO_WIDTH,
+  height: SAMPLE_VIDEO_HEIGHT,
+};
+
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatioPreset>("original");
   const [durationInFrames, setDurationInFrames] = useState(
     INITIAL_DURATION_IN_FRAMES,
   );
+
+  const canvasSize = getCanvasSize(aspectRatio, SOURCE_SIZE);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,8 +66,12 @@ export function EditorShell() {
         <PreviewPanel
           playerRef={playerRef}
           durationInFrames={durationInFrames}
+          canvasSize={canvasSize}
         />
-        <InspectorPanel />
+        <InspectorPanel
+          aspectRatio={aspectRatio}
+          onAspectRatioChange={setAspectRatio}
+        />
       </div>
       <PlaybackBar
         playerRef={playerRef}

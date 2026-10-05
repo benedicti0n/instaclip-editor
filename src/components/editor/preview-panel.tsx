@@ -1,40 +1,49 @@
 "use client";
 
-import type { RefObject } from "react";
+import type { CSSProperties, RefObject } from "react";
 import { Player } from "@remotion/player";
 import type { PlayerRef } from "@remotion/player";
 import {
   CLIP_COMPOSITION_FPS,
-  CLIP_COMPOSITION_HEIGHT,
-  CLIP_COMPOSITION_WIDTH,
   ClipComposition,
 } from "@/remotion/compositions/clip-composition";
 import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
+import type { VideoSize } from "@/types/editor";
 
 const INPUT_PROPS = { src: SAMPLE_VIDEO_SRC };
 
 type PreviewPanelProps = {
   playerRef: RefObject<PlayerRef | null>;
   durationInFrames: number;
+  canvasSize: VideoSize;
 };
 
 export function PreviewPanel({
   playerRef,
   durationInFrames,
+  canvasSize,
 }: PreviewPanelProps) {
   return (
     <section
       aria-label="Video preview"
-      className="flex min-h-0 flex-1 items-center justify-center bg-zinc-950 p-4 sm:p-6"
+      className="flex min-h-0 flex-1 items-center justify-center bg-zinc-950 p-4 sm:p-6 lg:[container-type:size]"
     >
-      <div className="aspect-[9/16] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-800 bg-black lg:aspect-auto lg:h-full lg:min-h-0">
+      <div
+        className="relative w-full max-w-sm overflow-hidden rounded-xl border border-zinc-800 bg-black lg:w-[min(100cqw,calc(100cqh*var(--clip-ratio)))] lg:max-w-none"
+        style={
+          {
+            aspectRatio: `${canvasSize.width} / ${canvasSize.height}`,
+            "--clip-ratio": canvasSize.width / canvasSize.height,
+          } as CSSProperties
+        }
+      >
         <Player
           ref={playerRef}
           component={ClipComposition}
           inputProps={INPUT_PROPS}
           durationInFrames={durationInFrames}
-          compositionWidth={CLIP_COMPOSITION_WIDTH}
-          compositionHeight={CLIP_COMPOSITION_HEIGHT}
+          compositionWidth={canvasSize.width}
+          compositionHeight={canvasSize.height}
           fps={CLIP_COMPOSITION_FPS}
           controls={false}
           clickToPlay={false}
