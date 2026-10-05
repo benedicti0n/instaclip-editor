@@ -44,17 +44,30 @@ If `yt-dlp` is not on `PATH`, the import API responds with
 targets modern yt-dlp releases (it relies on `--write-info-json`,
 `--merge-output-format`, `--no-playlist`, and `--format`).
 
-FFmpeg is recommended:
-
-- `ffprobe` (from FFmpeg) is used to read authoritative video dimensions and
-  duration after download. Without it, the adapter falls back to yt-dlp's
-  metadata.
-- yt-dlp itself may need `ffmpeg` to merge separate video/audio streams for
-  some posts.
+`ffprobe` is **required**: Instagram metadata usually omits the duration, so the
+server probes the downloaded file for authoritative duration and dimensions. If
+`ffprobe` is unavailable, the import API responds with
+`503 FFPROBE_UNAVAILABLE`. `ffmpeg` itself is optional, but yt-dlp may need it
+to merge separate video/audio streams for some posts.
 
 Imported files are written to `.tmp/imports/<uuid>/` (`video.*` plus
-`metadata.json`). The directory is gitignored. Stale imports older than
-24 hours are removed opportunistically when a new import starts.
+`metadata.json`). The directory is gitignored. Stale imports are removed
+opportunistically when a new import starts, using the TTL below.
+
+Import limits (all enforced server-side):
+
+| Limit                             | Default     | Env var                               |
+| --------------------------------- | ----------- | ------------------------------------- |
+| Maximum duration                  | 300 seconds | `CLIPCROP_MAX_VIDEO_DURATION_SECONDS` |
+| Maximum file size                 | 200 MB      | `CLIPCROP_MAX_VIDEO_BYTES`            |
+| Concurrent imports (per instance) | 2           | `CLIPCROP_MAX_CONCURRENT_IMPORTS`     |
+| Import TTL                        | 6 hours     | `CLIPCROP_IMPORT_TTL_HOURS`           |
+
+Invalid or non-positive values are ignored with a warning and the default is
+used. Exceeding duration or size deletes the import workspace and returns
+`422 VIDEO_TOO_LONG` / `VIDEO_TOO_LARGE`. When the concurrency limit is reached,
+the API returns `429 IMPORT_BUSY`. The concurrency guard is process-level and is
+not shared across replicas.
 
 Current limitations:
 
@@ -64,3 +77,74 @@ Current limitations:
   a media picker.
 - Instagram occasionally changes its behavior; extractor failures surface as
   structured API errors rather than silent retries.
+
+## Production deployment
+
+ClipCrop is a long-running Node.js server with local temporary storage. It is
+**not** a statically hostable or edge/serverless-first application.
+
+Runtime requirements:
+
+- Node.js 20.9+ (Node 22 LTS recommended) and pnpm.
+- `yt-dlp` executable on `PATH`.
+- `ffprobe` executable on `PATH` (required for imports).
+- `ffmpeg` on `PATH` recommended (yt-dlp may use it to merge streams).
+- A writable local filesystem for `.tmp/imports` that survives for the editing
+  session (up to the import TTL).
+- Long-lived HTTP responses with Range support for media streaming.
+- Node.js runtime for the API routes (no Edge runtime).
+
+Suitable hosting: VPS, Docker host, or a persistent Node container platform
+(Railway, Fly.io, Render, and similar). Not suitable without changes: purely
+static hosting, and ephemeral serverless platforms where the filesystem is not
+durable across requests/instances, arbitrary binaries are unavailable, or
+processes are heavily restricted. There is no universal Vercel compatibility
+claim.
+
+In production, opening `/editor` directly without having imported a video shows
+a "No video imported" screen instead of the synthetic development fixture. The
+sample fixture is only used when `NODE_ENV !== "production"` (development and
+tests).
+
+Operational endpoints:
+
+- `GET /api/health` returns `200` with
+  `{ "status": "ok", "tools": { "ytDlp": true, "ffprobe": true } }` when the
+  media tools are available, or `503` with `"status": "degraded"` otherwise.
+  Tool availability is cached per server process; install missing tools and
+  restart the server.
+
+Baseline response headers are set for all routes (`X-Content-Type-Options:
+nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+`X-Frame-Options: DENY`). A Content-Security-Policy is intentionally not set
+yet: Remotion's browser renderer relies on WebCodecs, workers, blob URLs, and
+canvas capture, and a naive CSP would break playback and export.
+
+### Docker
+
+A production image is provided in `Dockerfile` (multi-stage, Node 22 Alpine,
+non-root `node` user, `yt-dlp` and `ffmpeg` installed, writable
+`/app/.tmp/imports`):
+
+```bash
+docker build -t clipcrop .
+docker run --rm -p 3000:3000 clipcrop
+curl http://localhost:3000/api/health
+```
+
+The image downloads the standalone `yt-dlp` binary for the target architecture
+at build time, so builds require network access.
+
+### Deployment checklist
+
+- [ ] Node.js 20.9+ with pnpm, or the provided Docker image.
+- [ ] `yt-dlp --version` and `ffprobe -version` succeed on the server.
+- [ ] Writable, persistent-enough `.tmp/imports` directory.
+- [ ] `pnpm build` succeeds and `pnpm start` runs the production server.
+- [ ] `GET /api/health` returns `200`.
+- [ ] Import limits and TTL reviewed for the host's disk budget.
+- [ ] One test import completes and plays back with seeking in the browser.
+- [ ] Browser used for editing/export supports WebCodecs (Chrome, Edge, or
+      Firefox; Safari support depends on the platform's H.264 encoder).
+- [ ] Reverse proxy configured for large uploads/streams and, ideally, request
+      rate limiting (the app has no per-IP throttling).
