@@ -6,7 +6,11 @@ import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
-import { getCanvasSize, DEFAULT_VIDEO_TRANSFORM } from "@/lib/editor";
+import {
+  clampVideoTransform,
+  getCanvasSize,
+  DEFAULT_VIDEO_TRANSFORM,
+} from "@/lib/editor";
 import { getVideoDurationInSeconds } from "@/lib/media";
 import {
   SAMPLE_VIDEO_DURATION_IN_SECONDS,
@@ -15,7 +19,11 @@ import {
   SAMPLE_VIDEO_WIDTH,
 } from "@/lib/sample-video";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
-import type { AspectRatioPreset, VideoSize } from "@/types/editor";
+import type {
+  AspectRatioPreset,
+  VideoSize,
+  VideoTransform,
+} from "@/types/editor";
 
 const INITIAL_DURATION_IN_FRAMES =
   SAMPLE_VIDEO_DURATION_IN_SECONDS * CLIP_COMPOSITION_FPS;
@@ -28,11 +36,17 @@ const SOURCE_SIZE: VideoSize = {
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatioPreset>("original");
-  const videoTransform = DEFAULT_VIDEO_TRANSFORM;
+  const [videoTransform, setVideoTransform] = useState<VideoTransform>(
+    DEFAULT_VIDEO_TRANSFORM,
+  );
   const [durationInFrames, setDurationInFrames] = useState(
     INITIAL_DURATION_IN_FRAMES,
   );
   const canvasSize = getCanvasSize(aspectRatio, SOURCE_SIZE);
+
+  function handleTransformChange(next: VideoTransform) {
+    setVideoTransform(clampVideoTransform(next, SOURCE_SIZE, canvasSize));
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +83,7 @@ export function EditorShell() {
           canvasSize={canvasSize}
           sourceSize={SOURCE_SIZE}
           transform={videoTransform}
+          onTransformChange={handleTransformChange}
         />
         <InspectorPanel
           aspectRatio={aspectRatio}

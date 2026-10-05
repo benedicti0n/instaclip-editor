@@ -10,6 +10,8 @@ export const DEFAULT_VIDEO_TRANSFORM: VideoTransform = {
   scale: 1,
 };
 
+export const MIN_VIDEO_SCALE = 1;
+
 export const ASPECT_RATIO_PRESETS: ReadonlyArray<{
   value: AspectRatioPreset;
   label: string;
@@ -59,5 +61,33 @@ export function getRenderedVideoSize(
   return {
     width: sourceSize.width * coverScale * scale,
     height: sourceSize.height * coverScale * scale,
+  };
+}
+
+export function getPanBounds(
+  sourceSize: VideoSize,
+  canvasSize: VideoSize,
+  scale: number,
+): { maxX: number; maxY: number } {
+  const renderedSize = getRenderedVideoSize(sourceSize, canvasSize, scale);
+
+  return {
+    maxX: Math.max(0, (renderedSize.width - canvasSize.width) / 2),
+    maxY: Math.max(0, (renderedSize.height - canvasSize.height) / 2),
+  };
+}
+
+export function clampVideoTransform(
+  transform: VideoTransform,
+  sourceSize: VideoSize,
+  canvasSize: VideoSize,
+): VideoTransform {
+  const safeScale = Math.max(MIN_VIDEO_SCALE, transform.scale);
+  const { maxX, maxY } = getPanBounds(sourceSize, canvasSize, safeScale);
+
+  return {
+    x: Math.min(Math.max(transform.x, -maxX), maxX),
+    y: Math.min(Math.max(transform.y, -maxY), maxY),
+    scale: safeScale,
   };
 }

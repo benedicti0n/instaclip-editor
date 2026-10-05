@@ -1,6 +1,12 @@
 "use client";
 
-import type { CSSProperties, RefObject } from "react";
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
 import { Player } from "@remotion/player";
 import type { PlayerRef } from "@remotion/player";
 import {
@@ -16,6 +22,16 @@ type PreviewPanelProps = {
   canvasSize: VideoSize;
   sourceSize: VideoSize;
   transform: VideoTransform;
+  onTransformChange: (transform: VideoTransform) => void;
+};
+
+type DragState = {
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startTransform: VideoTransform;
+  previewWidth: number;
+  previewHeight: number;
 };
 
 export function PreviewPanel({
@@ -24,7 +40,10 @@ export function PreviewPanel({
   canvasSize,
   sourceSize,
   transform,
+  onTransformChange,
 }: PreviewPanelProps) {
+  const dragStateRef = useRef<DragState | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const inputProps = {
     src: SAMPLE_VIDEO_SRC,
     sourceWidth: sourceSize.width,
@@ -32,19 +51,79 @@ export function PreviewPanel({
     transform,
   };
 
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startTransform: transform,
+      previewWidth: rect.width,
+      previewHeight: rect.height,
+    };
+    setIsDragging(true);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragStateRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const compositionDeltaX =
+      (event.clientX - drag.startClientX) *
+      (canvasSize.width / drag.previewWidth);
+    const compositionDeltaY =
+      (event.clientY - drag.startClientY) *
+      (canvasSize.height / drag.previewHeight);
+
+    onTransformChange({
+      ...drag.startTransform,
+      x: drag.startTransform.x + compositionDeltaX,
+      y: drag.startTransform.y + compositionDeltaY,
+    });
+  }
+
+  function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragStateRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragStateRef.current = null;
+    setIsDragging(false);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
   return (
     <section
       aria-label="Video preview"
       className="flex min-h-0 flex-1 items-center justify-center bg-zinc-950 p-4 sm:p-6 lg:[container-type:size]"
     >
       <div
-        className="relative w-full max-w-sm overflow-hidden rounded-xl border border-zinc-800 bg-black lg:w-[min(100cqw,calc(100cqh*var(--clip-ratio)))] lg:max-w-none"
+        className={`relative w-full max-w-sm touch-none overflow-hidden rounded-xl border border-zinc-800 bg-black select-none lg:w-[min(100cqw,calc(100cqh*var(--clip-ratio)))] lg:max-w-none ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
         style={
           {
             aspectRatio: `${canvasSize.width} / ${canvasSize.height}`,
             "--clip-ratio": canvasSize.width / canvasSize.height,
           } as CSSProperties
         }
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
       >
         <Player
           ref={playerRef}
