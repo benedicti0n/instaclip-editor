@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,39 +14,29 @@ import {
   TEXT_FONT_OPTIONS,
   TEXT_WEIGHT_OPTIONS,
 } from "@/lib/text-layer";
-import type {
-  AspectRatioPreset,
-  TextFontFamily,
-  TextFontWeight,
-  TextLayer,
-} from "@/types/editor";
+import { useEditorStore } from "@/store/editor-store";
+import {
+  selectClampedVideoScale,
+  selectSelectedTextLayer,
+} from "@/store/editor-selectors";
+import type { TextFontFamily, TextFontWeight } from "@/types/editor";
 
 const SELECT_CLASSES =
   "mt-2 w-full rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500";
 
-type InspectorPanelProps = {
-  aspectRatio: AspectRatioPreset;
-  onAspectRatioChange: (preset: AspectRatioPreset) => void;
-  scale: number;
-  onScaleChange: (scale: number) => void;
-  onResetFraming: () => void;
-  selectedTextLayer: TextLayer | null;
-  onAddTextLayer: () => void;
-  onTextLayerChange: (id: string, patch: Partial<TextLayer>) => void;
-  onDeleteTextLayer: () => void;
-};
+export function InspectorPanel() {
+  const aspectRatio = useEditorStore((state) => state.aspectRatio);
+  const setAspectRatio = useEditorStore((state) => state.setAspectRatio);
+  const scale = useEditorStore(selectClampedVideoScale);
+  const setVideoScale = useEditorStore((state) => state.setVideoScale);
+  const resetVideoTransform = useEditorStore(
+    (state) => state.resetVideoTransform,
+  );
+  const selectedTextLayer = useEditorStore(selectSelectedTextLayer);
+  const addTextLayer = useEditorStore((state) => state.addTextLayer);
+  const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
+  const deleteTextLayer = useEditorStore((state) => state.deleteTextLayer);
 
-export function InspectorPanel({
-  aspectRatio,
-  onAspectRatioChange,
-  scale,
-  onScaleChange,
-  onResetFraming,
-  selectedTextLayer,
-  onAddTextLayer,
-  onTextLayerChange,
-  onDeleteTextLayer,
-}: InspectorPanelProps) {
   return (
     <aside
       aria-label="Inspector"
@@ -66,7 +58,7 @@ export function InspectorPanel({
                 variant="outline"
                 size="sm"
                 aria-pressed={isSelected}
-                onClick={() => onAspectRatioChange(value)}
+                onClick={() => setAspectRatio(value)}
                 className={isSelected ? "bg-zinc-800" : undefined}
               >
                 {label}
@@ -93,7 +85,7 @@ export function InspectorPanel({
             max={MAX_VIDEO_SCALE}
             step={0.01}
             value={scale}
-            onChange={(event) => onScaleChange(Number(event.target.value))}
+            onChange={(event) => setVideoScale(Number(event.target.value))}
             aria-valuetext={`${Math.round(scale * 100)}%`}
             className="mt-2 w-full cursor-pointer accent-zinc-300"
           />
@@ -102,7 +94,7 @@ export function InspectorPanel({
           variant="outline"
           size="sm"
           className="mt-3 w-full"
-          onClick={onResetFraming}
+          onClick={resetVideoTransform}
         >
           Reset framing
         </Button>
@@ -112,7 +104,7 @@ export function InspectorPanel({
           variant="outline"
           size="sm"
           className="w-full"
-          onClick={onAddTextLayer}
+          onClick={addTextLayer}
         >
           Add text
         </Button>
@@ -130,7 +122,7 @@ export function InspectorPanel({
                 rows={3}
                 value={selectedTextLayer.text}
                 onChange={(event) =>
-                  onTextLayerChange(selectedTextLayer.id, {
+                  updateTextLayer(selectedTextLayer.id, {
                     text: event.target.value,
                   })
                 }
@@ -149,7 +141,7 @@ export function InspectorPanel({
                 id="text-font"
                 value={selectedTextLayer.fontFamily}
                 onChange={(event) =>
-                  onTextLayerChange(selectedTextLayer.id, {
+                  updateTextLayer(selectedTextLayer.id, {
                     fontFamily: event.target.value as TextFontFamily,
                   })
                 }
@@ -173,7 +165,7 @@ export function InspectorPanel({
                 id="text-weight"
                 value={selectedTextLayer.fontWeight}
                 onChange={(event) =>
-                  onTextLayerChange(selectedTextLayer.id, {
+                  updateTextLayer(selectedTextLayer.id, {
                     fontWeight: Number(event.target.value) as TextFontWeight,
                   })
                 }
@@ -206,7 +198,7 @@ export function InspectorPanel({
                 step={1}
                 value={selectedTextLayer.fontSize}
                 onChange={(event) =>
-                  onTextLayerChange(selectedTextLayer.id, {
+                  updateTextLayer(selectedTextLayer.id, {
                     fontSize: Number(event.target.value),
                   })
                 }
@@ -227,7 +219,7 @@ export function InspectorPanel({
                   type="color"
                   value={selectedTextLayer.color}
                   onChange={(event) =>
-                    onTextLayerChange(selectedTextLayer.id, {
+                    updateTextLayer(selectedTextLayer.id, {
                       color: event.target.value,
                     })
                   }
@@ -255,7 +247,7 @@ export function InspectorPanel({
                       size="sm"
                       aria-pressed={isSelected}
                       onClick={() =>
-                        onTextLayerChange(selectedTextLayer.id, {
+                        updateTextLayer(selectedTextLayer.id, {
                           textAlign: value,
                         })
                       }
@@ -273,7 +265,7 @@ export function InspectorPanel({
                 type="checkbox"
                 checked={selectedTextLayer.hasShadow}
                 onChange={(event) =>
-                  onTextLayerChange(selectedTextLayer.id, {
+                  updateTextLayer(selectedTextLayer.id, {
                     hasShadow: event.target.checked,
                   })
                 }
@@ -290,7 +282,7 @@ export function InspectorPanel({
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={onDeleteTextLayer}
+              onClick={() => deleteTextLayer(selectedTextLayer.id)}
             >
               Delete text
             </Button>

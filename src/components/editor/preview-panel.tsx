@@ -10,25 +10,27 @@ import {
 } from "react";
 import { Player } from "@remotion/player";
 import type { PlayerRef } from "@remotion/player";
+import { useShallow } from "zustand/react/shallow";
 import {
   CLIP_COMPOSITION_FPS,
   ClipComposition,
 } from "@/remotion/compositions/clip-composition";
-import { SAMPLE_VIDEO_SRC } from "@/lib/sample-video";
+import {
+  clampVideoTransform,
+  getCanvasSize,
+  getSourceSize,
+} from "@/lib/editor";
+import { clampTextLayerToCanvas } from "@/lib/text-layer";
+import { useEditorStore } from "@/store/editor-store";
+import {
+  selectDurationInFrames,
+  selectEditorDocument,
+} from "@/store/editor-selectors";
 import { TextLayerOverlay } from "./text-layer-overlay";
-import type { TextLayer, VideoSize, VideoTransform } from "@/types/editor";
+import type { VideoTransform } from "@/types/editor";
 
 type PreviewPanelProps = {
   playerRef: RefObject<PlayerRef | null>;
-  durationInFrames: number;
-  canvasSize: VideoSize;
-  sourceSize: VideoSize;
-  transform: VideoTransform;
-  onTransformChange: (transform: VideoTransform) => void;
-  textLayers: TextLayer[];
-  selectedTextLayerId: string | null;
-  onSelectTextLayer: (id: string) => void;
-  onTextLayerChange: (id: string, patch: Partial<TextLayer>) => void;
 };
 
 type DragState = {
@@ -40,24 +42,32 @@ type DragState = {
   previewHeight: number;
 };
 
-export function PreviewPanel({
-  playerRef,
-  durationInFrames,
-  canvasSize,
-  sourceSize,
-  transform,
-  onTransformChange,
-  textLayers,
-  selectedTextLayerId,
-  onSelectTextLayer,
-  onTextLayerChange,
-}: PreviewPanelProps) {
+export function PreviewPanel({ playerRef }: PreviewPanelProps) {
+  const document = useEditorStore(useShallow(selectEditorDocument));
+  const durationInFrames = useEditorStore(selectDurationInFrames);
+  const selectedTextLayerId = useEditorStore(
+    (state) => state.selectedTextLayerId,
+  );
+  const selectTextLayer = useEditorStore((state) => state.selectTextLayer);
+  const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
+  const setVideoTransform = useEditorStore((state) => state.setVideoTransform);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewWidth, setPreviewWidth] = useState(0);
+
+  const sourceSize = getSourceSize(document.sourceMetadata);
+  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize);
+  const transform = clampVideoTransform(
+    document.videoTransform,
+    sourceSize,
+    canvasSize,
+  );
+  const textLayers = document.textLayers.map((layer) =>
+    clampTextLayerToCanvas(layer, canvasSize),
+  );
   const inputProps = {
-    src: SAMPLE_VIDEO_SRC,
+    src: document.media.src,
     sourceWidth: sourceSize.width,
     sourceHeight: sourceSize.height,
     transform,
@@ -116,7 +126,7 @@ export function PreviewPanel({
       (event.clientY - drag.startClientY) *
       (canvasSize.height / drag.previewHeight);
 
-    onTransformChange({
+    setVideoTransform({
       ...drag.startTransform,
       x: drag.startTransform.x + compositionDeltaX,
       y: drag.startTransform.y + compositionDeltaY,
@@ -179,8 +189,8 @@ export function PreviewPanel({
           selectedTextLayerId={selectedTextLayerId}
           canvasSize={canvasSize}
           previewScale={previewScale}
-          onSelectTextLayer={onSelectTextLayer}
-          onTextLayerChange={onTextLayerChange}
+          onSelectTextLayer={selectTextLayer}
+          onTextLayerChange={updateTextLayer}
         />
       </div>
     </section>
