@@ -1,16 +1,24 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { ASPECT_RATIO_PRESETS } from "@/lib/editor";
+import {
+  ASPECT_RATIO_PRESETS,
+  MAX_VIDEO_SCALE,
+  MIN_VIDEO_SCALE,
+} from "@/lib/editor";
 import type { AspectRatioPreset } from "@/types/editor";
 
 type InspectorPanelProps = {
   aspectRatio: AspectRatioPreset;
   onAspectRatioChange: (preset: AspectRatioPreset) => void;
+  scale: number;
+  onScaleChange: (scale: number) => void;
 };
 
 export function InspectorPanel({
   aspectRatio,
   onAspectRatioChange,
+  scale,
+  onScaleChange,
 }: InspectorPanelProps) {
   return (
     <aside
@@ -40,6 +48,30 @@ export function InspectorPanel({
               </Button>
             );
           })}
+        </div>
+        <div className="mt-4">
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="video-zoom"
+              className="text-xs font-medium text-zinc-500"
+            >
+              Zoom
+            </label>
+            <span className="text-xs tabular-nums text-zinc-400">
+              {Math.round(scale * 100)}%
+            </span>
+          </div>
+          <input
+            id="video-zoom"
+            type="range"
+            min={MIN_VIDEO_SCALE}
+            max={MAX_VIDEO_SCALE}
+            step={0.01}
+            value={scale}
+            onChange={(event) => onScaleChange(Number(event.target.value))}
+            aria-valuetext={`${Math.round(scale * 100)}%`}
+            className="mt-2 w-full cursor-pointer accent-zinc-300"
+          />
         </div>
       </InspectorSection>
       <InspectorSection title="Text">

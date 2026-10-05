@@ -12,6 +12,8 @@ export const DEFAULT_VIDEO_TRANSFORM: VideoTransform = {
 
 export const MIN_VIDEO_SCALE = 1;
 
+export const MAX_VIDEO_SCALE = 3;
+
 export const ASPECT_RATIO_PRESETS: ReadonlyArray<{
   value: AspectRatioPreset;
   label: string;

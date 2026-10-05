@@ -48,6 +48,22 @@ export function EditorShell() {
     setVideoTransform(clampVideoTransform(next, SOURCE_SIZE, canvasSize));
   }
 
+  function handleScaleChange(nextScale: number) {
+    setVideoTransform((current) => {
+      const ratio = current.scale > 0 ? nextScale / current.scale : 1;
+
+      return clampVideoTransform(
+        {
+          x: current.x * ratio,
+          y: current.y * ratio,
+          scale: nextScale,
+        },
+        SOURCE_SIZE,
+        canvasSize,
+      );
+    });
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -88,6 +104,8 @@ export function EditorShell() {
         <InspectorPanel
           aspectRatio={aspectRatio}
           onAspectRatioChange={setAspectRatio}
+          scale={videoTransform.scale}
+          onScaleChange={handleScaleChange}
         />
       </div>
       <PlaybackBar
