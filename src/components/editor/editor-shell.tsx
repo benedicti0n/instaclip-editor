@@ -11,7 +11,7 @@ import {
   getCanvasSize,
   DEFAULT_VIDEO_TRANSFORM,
 } from "@/lib/editor";
-import { getVideoDurationInSeconds } from "@/lib/media";
+import { getVideoMetadata, type VideoMetadata } from "@/lib/media";
 import {
   SAMPLE_VIDEO_DURATION_IN_SECONDS,
   SAMPLE_VIDEO_HEIGHT,
@@ -25,10 +25,8 @@ import type {
   VideoTransform,
 } from "@/types/editor";
 
-const INITIAL_DURATION_IN_FRAMES =
-  SAMPLE_VIDEO_DURATION_IN_SECONDS * CLIP_COMPOSITION_FPS;
-
-const SOURCE_SIZE: VideoSize = {
+const INITIAL_SOURCE_METADATA: VideoMetadata = {
+  durationInSeconds: SAMPLE_VIDEO_DURATION_IN_SECONDS,
   width: SAMPLE_VIDEO_WIDTH,
   height: SAMPLE_VIDEO_HEIGHT,
 };
@@ -39,13 +37,22 @@ export function EditorShell() {
   const [videoTransform, setVideoTransform] = useState<VideoTransform>(
     DEFAULT_VIDEO_TRANSFORM,
   );
-  const [durationInFrames, setDurationInFrames] = useState(
-    INITIAL_DURATION_IN_FRAMES,
+  const [sourceMetadata, setSourceMetadata] = useState<VideoMetadata>(
+    INITIAL_SOURCE_METADATA,
   );
-  const canvasSize = getCanvasSize(aspectRatio, SOURCE_SIZE);
+
+  const sourceSize: VideoSize = {
+    width: sourceMetadata.width,
+    height: sourceMetadata.height,
+  };
+  const canvasSize = getCanvasSize(aspectRatio, sourceSize);
+  const durationInFrames = Math.max(
+    1,
+    Math.round(sourceMetadata.durationInSeconds * CLIP_COMPOSITION_FPS),
+  );
 
   function handleTransformChange(next: VideoTransform) {
-    setVideoTransform(clampVideoTransform(next, SOURCE_SIZE, canvasSize));
+    setVideoTransform(clampVideoTransform(next, sourceSize, canvasSize));
   }
 
   function handleScaleChange(nextScale: number) {
@@ -58,7 +65,7 @@ export function EditorShell() {
           y: current.y * ratio,
           scale: nextScale,
         },
-        SOURCE_SIZE,
+        sourceSize,
         canvasSize,
       );
     });
@@ -71,16 +78,14 @@ export function EditorShell() {
   useEffect(() => {
     let cancelled = false;
 
-    getVideoDurationInSeconds(SAMPLE_VIDEO_SRC)
-      .then((seconds) => {
+    getVideoMetadata(SAMPLE_VIDEO_SRC)
+      .then((metadata) => {
         if (!cancelled) {
-          setDurationInFrames(
-            Math.max(1, Math.round(seconds * CLIP_COMPOSITION_FPS)),
-          );
+          setSourceMetadata(metadata);
         }
       })
       .catch(() => {
-        // Keep the known fixture duration if metadata cannot be loaded.
+        // Keep the known fixture metadata if it cannot be loaded.
       });
 
     return () => {
@@ -101,7 +106,7 @@ export function EditorShell() {
           playerRef={playerRef}
           durationInFrames={durationInFrames}
           canvasSize={canvasSize}
-          sourceSize={SOURCE_SIZE}
+          sourceSize={sourceSize}
           transform={videoTransform}
           onTransformChange={handleTransformChange}
         />

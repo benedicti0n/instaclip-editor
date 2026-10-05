@@ -1,4 +1,10 @@
-export function getVideoDurationInSeconds(src: string): Promise<number> {
+export type VideoMetadata = {
+  durationInSeconds: number;
+  width: number;
+  height: number;
+};
+
+export function getVideoMetadata(src: string): Promise<VideoMetadata> {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
     video.preload = "metadata";
@@ -11,13 +17,22 @@ export function getVideoDurationInSeconds(src: string): Promise<number> {
     video.addEventListener(
       "loadedmetadata",
       () => {
-        const duration = video.duration;
+        const metadata: VideoMetadata = {
+          durationInSeconds: video.duration,
+          width: video.videoWidth,
+          height: video.videoHeight,
+        };
         cleanup();
 
-        if (Number.isFinite(duration) && duration > 0) {
-          resolve(duration);
+        if (
+          Number.isFinite(metadata.durationInSeconds) &&
+          metadata.durationInSeconds > 0 &&
+          metadata.width > 0 &&
+          metadata.height > 0
+        ) {
+          resolve(metadata);
         } else {
-          reject(new Error(`Invalid duration reported for ${src}`));
+          reject(new Error(`Invalid metadata reported for ${src}`));
         }
       },
       { once: true },
