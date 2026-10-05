@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import { blurActiveElement } from "@/lib/keyboard";
 import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
 import type { TextLayer, VideoSize } from "@/types/editor";
 
@@ -43,6 +44,7 @@ export function TextLayerOverlay({
 
     event.preventDefault();
     event.stopPropagation();
+    blurActiveElement();
     onSelectTextLayer(layer.id);
     event.currentTarget.setPointerCapture(event.pointerId);
 

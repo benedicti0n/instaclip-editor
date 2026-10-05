@@ -6,6 +6,7 @@ import type { PlayerRef } from "@remotion/player";
 import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
+import { useEditorKeyboard } from "./use-editor-keyboard";
 import { useVideoExport } from "./use-video-export";
 import { Button } from "@/components/ui/button";
 import { downloadBlob } from "@/lib/download";
@@ -17,6 +18,7 @@ const CAPTION_FILE_NAME = "caption.txt";
 export function EditorShell() {
   const router = useRouter();
   const playerRef = useRef<PlayerRef>(null);
+  useEditorKeyboard();
   const mediaSrc = useEditorStore((state) => state.media.src);
   const caption = useEditorStore((state) => state.media.caption);
   const isDirty = useEditorStore(selectIsDocumentDirty);

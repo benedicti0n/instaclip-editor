@@ -15,6 +15,7 @@ import { ClipComposition } from "@/remotion/compositions/clip-composition";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/constants";
 import { createClipRenderInput } from "@/remotion/clip-render-input";
 import { getCanvasSize, getSourceSize } from "@/lib/editor";
+import { blurActiveElement } from "@/lib/keyboard";
 import { useEditorStore } from "@/store/editor-store";
 import {
   selectDurationInFrames,
@@ -83,6 +84,7 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
     }
 
     event.preventDefault();
+    blurActiveElement();
     event.currentTarget.setPointerCapture(event.pointerId);
 
     const rect = event.currentTarget.getBoundingClientRect();
