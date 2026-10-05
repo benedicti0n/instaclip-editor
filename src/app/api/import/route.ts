@@ -8,10 +8,10 @@ import {
 } from "@/lib/server/import-storage";
 import {
   extractInstagramMedia,
-  getYtDlpVersion,
   YtDlpError,
   type YtDlpErrorCode,
 } from "@/lib/server/yt-dlp";
+import { getToolAvailability } from "@/lib/server/tooling";
 import type {
   ImportErrorCode,
   ImportErrorResponse,
@@ -67,12 +67,19 @@ export async function POST(request: Request) {
     return errorResponse(400, "INVALID_URL", validation.reason);
   }
 
-  const ytDlpVersion = await getYtDlpVersion();
-  if (!ytDlpVersion) {
+  const tools = await getToolAvailability();
+  if (!tools.ytDlp) {
     return errorResponse(
       503,
       "YTDLP_UNAVAILABLE",
       "yt-dlp is not installed on the server. See the README for setup instructions.",
+    );
+  }
+  if (!tools.ffprobe) {
+    return errorResponse(
+      503,
+      "FFPROBE_UNAVAILABLE",
+      "ffprobe is not available on the server. See the README for setup instructions.",
     );
   }
 
