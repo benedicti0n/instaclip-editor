@@ -18,9 +18,11 @@ import {
   SAMPLE_VIDEO_SRC,
   SAMPLE_VIDEO_WIDTH,
 } from "@/lib/sample-video";
+import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
 import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
 import type {
   AspectRatioPreset,
+  TextLayer,
   VideoSize,
   VideoTransform,
 } from "@/types/editor";
@@ -40,6 +42,13 @@ export function EditorShell() {
   const [sourceMetadata, setSourceMetadata] = useState<VideoMetadata>(
     INITIAL_SOURCE_METADATA,
   );
+  const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
+  const [selectedTextLayerId, setSelectedTextLayerId] = useState<string | null>(
+    null,
+  );
+
+  const selectedTextLayer =
+    textLayers.find((layer) => layer.id === selectedTextLayerId) ?? null;
 
   const sourceSize: VideoSize = {
     width: sourceMetadata.width,
@@ -67,6 +76,16 @@ export function EditorShell() {
     setVideoTransform((current) =>
       clampVideoTransform(current, sourceSize, nextCanvasSize),
     );
+    setTextLayers((layers) =>
+      layers.map((layer) => clampTextLayerToCanvas(layer, nextCanvasSize)),
+    );
+  }
+
+  function handleAddTextLayer() {
+    const layer = createTextLayer(crypto.randomUUID());
+
+    setTextLayers((layers) => [...layers, layer]);
+    setSelectedTextLayerId(layer.id);
   }
 
   function handleScaleChange(nextScale: number) {
@@ -133,6 +152,8 @@ export function EditorShell() {
           scale={clampedVideoTransform.scale}
           onScaleChange={handleScaleChange}
           onResetFraming={handleResetFraming}
+          selectedTextLayer={selectedTextLayer}
+          onAddTextLayer={handleAddTextLayer}
         />
       </div>
       <PlaybackBar

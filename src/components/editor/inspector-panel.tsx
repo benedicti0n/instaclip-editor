@@ -5,7 +5,7 @@ import {
   MAX_VIDEO_SCALE,
   MIN_VIDEO_SCALE,
 } from "@/lib/editor";
-import type { AspectRatioPreset } from "@/types/editor";
+import type { AspectRatioPreset, TextLayer } from "@/types/editor";
 
 type InspectorPanelProps = {
   aspectRatio: AspectRatioPreset;
@@ -13,6 +13,8 @@ type InspectorPanelProps = {
   scale: number;
   onScaleChange: (scale: number) => void;
   onResetFraming: () => void;
+  selectedTextLayer: TextLayer | null;
+  onAddTextLayer: () => void;
 };
 
 export function InspectorPanel({
@@ -21,6 +23,8 @@ export function InspectorPanel({
   scale,
   onScaleChange,
   onResetFraming,
+  selectedTextLayer,
+  onAddTextLayer,
 }: InspectorPanelProps) {
   return (
     <aside
@@ -85,9 +89,23 @@ export function InspectorPanel({
         </Button>
       </InspectorSection>
       <InspectorSection title="Text">
-        <Button variant="outline" size="sm" disabled className="w-full">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={onAddTextLayer}
+        >
           Add text
         </Button>
+        {selectedTextLayer ? (
+          <p className="mt-3 truncate text-xs text-zinc-500">
+            Selected: {selectedTextLayer.text || "Empty text"}
+          </p>
+        ) : (
+          <p className="mt-3 text-xs leading-5 text-zinc-500">
+            Add text to place it over the video.
+          </p>
+        )}
       </InspectorSection>
     </aside>
   );
