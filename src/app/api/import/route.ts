@@ -1,5 +1,9 @@
 import { validateInstagramUrl } from "@/lib/instagram-url";
 import {
+  IMPORT_RUNTIME_LIMITS,
+  formatDurationLimit,
+} from "@/lib/server/import-config";
+import {
   cleanupStaleImports,
   createImportId,
   createImportWorkspace,
@@ -19,6 +23,18 @@ import type {
 } from "@/types/import";
 
 export const runtime = "nodejs";
+
+class ImportPolicyError extends Error {
+  readonly code: ImportErrorCode;
+  readonly status: number;
+
+  constructor(code: ImportErrorCode, status: number, message: string) {
+    super(message);
+    this.name = "ImportPolicyError";
+    this.code = code;
+    this.status = status;
+  }
+}
 
 function errorResponse(
   status: number,
@@ -95,6 +111,19 @@ export async function POST(request: Request) {
       workspaceDirectory,
     );
 
+    if (
+      extracted.durationInSeconds >
+      IMPORT_RUNTIME_LIMITS.maxVideoDurationSeconds
+    ) {
+      throw new ImportPolicyError(
+        "VIDEO_TOO_LONG",
+        422,
+        `ClipCrop supports videos up to ${formatDurationLimit(
+          IMPORT_RUNTIME_LIMITS.maxVideoDurationSeconds,
+        )}.`,
+      );
+    }
+
     await writeImportRecord(importId, {
       sourceUrl: validation.normalizedUrl,
       caption: extracted.description,
@@ -124,6 +153,10 @@ export async function POST(request: Request) {
     return Response.json(response);
   } catch (error) {
     await removeImport(importId).catch(() => undefined);
+
+    if (error instanceof ImportPolicyError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
 
     if (error instanceof YtDlpError) {
       if (error.diagnostics) {

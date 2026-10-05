@@ -8,6 +8,7 @@ export type ImportErrorCode =
   | "UNSUPPORTED_MEDIA"
   | "EXTRACTION_FAILED"
   | "TIMEOUT"
+  | "VIDEO_TOO_LONG"
   | "INTERNAL_ERROR";
 
 export type ImportSuccessResponse = {
