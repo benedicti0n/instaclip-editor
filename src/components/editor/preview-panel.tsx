@@ -15,12 +15,8 @@ import {
   CLIP_COMPOSITION_FPS,
   ClipComposition,
 } from "@/remotion/compositions/clip-composition";
-import {
-  clampVideoTransform,
-  getCanvasSize,
-  getSourceSize,
-} from "@/lib/editor";
-import { clampTextLayerToCanvas } from "@/lib/text-layer";
+import { createClipRenderInput } from "@/remotion/clip-render-input";
+import { getCanvasSize, getSourceSize } from "@/lib/editor";
 import { useEditorStore } from "@/store/editor-store";
 import {
   selectDurationInFrames,
@@ -58,21 +54,8 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
 
   const sourceSize = getSourceSize(document.sourceMetadata);
   const canvasSize = getCanvasSize(document.aspectRatio, sourceSize);
-  const transform = clampVideoTransform(
-    document.videoTransform,
-    sourceSize,
-    canvasSize,
-  );
-  const textLayers = document.textLayers.map((layer) =>
-    clampTextLayerToCanvas(layer, canvasSize),
-  );
-  const inputProps = {
-    src: document.media.src,
-    sourceWidth: sourceSize.width,
-    sourceHeight: sourceSize.height,
-    transform,
-    textLayers,
-  };
+  const renderInput = createClipRenderInput(document);
+  const { transform, textLayers } = renderInput;
   const previewScale = previewWidth > 0 ? previewWidth / canvasSize.width : 0;
 
   useEffect(() => {
@@ -171,7 +154,7 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
         <Player
           ref={playerRef}
           component={ClipComposition}
-          inputProps={inputProps}
+          inputProps={renderInput}
           durationInFrames={durationInFrames}
           compositionWidth={canvasSize.width}
           compositionHeight={canvasSize.height}

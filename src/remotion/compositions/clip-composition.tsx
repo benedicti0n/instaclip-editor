@@ -1,17 +1,11 @@
 import { AbsoluteFill, Video, useVideoConfig } from "remotion";
 import { getRenderedVideoSize } from "@/lib/editor";
 import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
-import type { TextLayer, VideoTransform } from "@/types/editor";
+import type { ClipRenderInput } from "@/remotion/clip-render-input";
 
 export const CLIP_COMPOSITION_FPS = 30;
 
-export type ClipCompositionProps = {
-  src: string;
-  sourceWidth: number;
-  sourceHeight: number;
-  transform: VideoTransform;
-  textLayers: TextLayer[];
-};
+export type ClipCompositionProps = ClipRenderInput;
 
 export function ClipComposition({
   src,
