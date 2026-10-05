@@ -1,5 +1,6 @@
 import { validateInstagramUrl } from "@/lib/instagram-url";
 import {
+  cleanupStaleImports,
   createImportId,
   createImportWorkspace,
   removeImport,
@@ -76,6 +77,9 @@ export async function POST(request: Request) {
   }
 
   const importId = createImportId();
+
+  await cleanupStaleImports().catch(() => undefined);
+
   const workspaceDirectory = await createImportWorkspace(importId);
 
   try {
