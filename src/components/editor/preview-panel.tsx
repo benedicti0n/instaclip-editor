@@ -27,7 +27,7 @@ export function PreviewPanel({
       aria-label="Video preview"
       className="flex min-h-0 flex-1 items-center justify-center bg-zinc-950 p-4 sm:p-6"
     >
-      <div className="h-full min-h-[18rem] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-800 bg-black lg:min-h-0">
+      <div className="aspect-[9/16] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-800 bg-black lg:aspect-auto lg:h-full lg:min-h-0">
         <Player
           ref={playerRef}
           component={ClipComposition}
