@@ -6,13 +6,10 @@ import { InspectorPanel } from "./inspector-panel";
 import { PlaybackBar } from "./playback-bar";
 import { PreviewPanel } from "./preview-panel";
 import { Button } from "@/components/ui/button";
-import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
 import { useEditorStore } from "@/store/editor-store";
-import { selectDurationInFrames } from "@/store/editor-selectors";
 
 export function EditorShell() {
   const playerRef = useRef<PlayerRef>(null);
-  const durationInFrames = useEditorStore(selectDurationInFrames);
   const mediaSrc = useEditorStore((state) => state.media.src);
   const loadSourceMetadata = useEditorStore(
     (state) => state.loadSourceMetadata,
@@ -34,11 +31,7 @@ export function EditorShell() {
         <PreviewPanel playerRef={playerRef} />
         <InspectorPanel />
       </div>
-      <PlaybackBar
-        playerRef={playerRef}
-        durationInFrames={durationInFrames}
-        fps={CLIP_COMPOSITION_FPS}
-      />
+      <PlaybackBar playerRef={playerRef} />
     </div>
   );
 }

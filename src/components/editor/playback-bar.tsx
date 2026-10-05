@@ -4,18 +4,16 @@ import { useEffect, useState, type ChangeEvent, type RefObject } from "react";
 import type { PlayerRef } from "@remotion/player";
 import { Button } from "@/components/ui/button";
 import { formatTimecode } from "@/lib/time";
+import { CLIP_COMPOSITION_FPS } from "@/remotion/compositions/clip-composition";
+import { useEditorStore } from "@/store/editor-store";
+import { selectDurationInFrames } from "@/store/editor-selectors";
 
 type PlaybackBarProps = {
   playerRef: RefObject<PlayerRef | null>;
-  durationInFrames: number;
-  fps: number;
 };
 
-export function PlaybackBar({
-  playerRef,
-  durationInFrames,
-  fps,
-}: PlaybackBarProps) {
+export function PlaybackBar({ playerRef }: PlaybackBarProps) {
+  const durationInFrames = useEditorStore(selectDurationInFrames);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -96,8 +94,8 @@ export function PlaybackBar({
         className="min-w-0 flex-1 cursor-pointer accent-zinc-300"
       />
       <span className="shrink-0 text-xs tabular-nums text-zinc-500">
-        {formatTimecode(currentFrame / fps)} /{" "}
-        {formatTimecode(durationInFrames / fps)}
+        {formatTimecode(currentFrame / CLIP_COMPOSITION_FPS)} /{" "}
+        {formatTimecode(durationInFrames / CLIP_COMPOSITION_FPS)}
       </span>
     </div>
   );
