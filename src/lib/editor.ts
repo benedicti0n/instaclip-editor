@@ -1,5 +1,6 @@
 import type {
   AspectRatioPreset,
+  VideoMetadata,
   VideoSize,
   VideoTransform,
 } from "@/types/editor";
@@ -10,9 +11,15 @@ export const DEFAULT_VIDEO_TRANSFORM: VideoTransform = {
   scale: 1,
 };
 
+export const DEFAULT_ASPECT_RATIO: AspectRatioPreset = "original";
+
 export const MIN_VIDEO_SCALE = 1;
 
 export const MAX_VIDEO_SCALE = 3;
+
+export function getSourceSize(metadata: VideoMetadata): VideoSize {
+  return { width: metadata.width, height: metadata.height };
+}
 
 export const ASPECT_RATIO_PRESETS: ReadonlyArray<{
   value: AspectRatioPreset;
