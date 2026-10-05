@@ -69,6 +69,8 @@ function statusForYtDlpError(code: YtDlpErrorCode): number {
 }
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (Number.isFinite(contentLength) && contentLength > MAX_IMPORT_BODY_BYTES) {
     return errorResponse(
@@ -207,20 +209,33 @@ export async function POST(request: Request) {
       },
     };
 
+    console.info(
+      `[import] completed importId=${activeImportId} elapsedMs=${Date.now() - startedAt} durationSeconds=${extracted.durationInSeconds.toFixed(2)} fileSizeBytes=${extracted.fileSizeBytes}`,
+    );
+
     return Response.json(response);
   } catch (error) {
     if (importId) {
       await removeImport(importId).catch(() => undefined);
     }
 
+    const elapsedMs = Date.now() - startedAt;
+    const failedImportId = importId ?? "none";
+
     if (error instanceof ImportPolicyError) {
+      console.warn(
+        `[import] rejected importId=${failedImportId} code=${error.code} elapsedMs=${elapsedMs}`,
+      );
+
       return errorResponse(error.status, error.code, error.message);
     }
 
     if (error instanceof YtDlpError) {
-      if (error.diagnostics) {
-        console.error(`[import] yt-dlp ${error.code}: ${error.diagnostics}`);
-      }
+      console.error(
+        `[import] failed importId=${failedImportId} code=${error.code} elapsedMs=${elapsedMs}${
+          error.diagnostics ? ` diagnostics=${error.diagnostics}` : ""
+        }`,
+      );
 
       return errorResponse(
         statusForYtDlpError(error.code),
@@ -229,7 +244,11 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("[import] unexpected failure", error);
+    console.error(
+      `[import] internal error importId=${failedImportId} elapsedMs=${elapsedMs}`,
+      error,
+    );
+
     return errorResponse(
       500,
       "INTERNAL_ERROR",
