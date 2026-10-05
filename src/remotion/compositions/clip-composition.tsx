@@ -1,4 +1,5 @@
-import { AbsoluteFill, Video, useVideoConfig } from "remotion";
+import { Video } from "@remotion/media";
+import { AbsoluteFill, useVideoConfig } from "remotion";
 import { getRenderedVideoSize } from "@/lib/editor";
 import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
 import type { ClipRenderInput } from "@/remotion/clip-render-input";
