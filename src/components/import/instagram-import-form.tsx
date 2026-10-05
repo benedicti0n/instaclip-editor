@@ -47,7 +47,12 @@ export function InstagramImportForm() {
   }
 
   return (
-    <form className="mt-8" onSubmit={handleSubmit} noValidate>
+    <form
+      className="mt-8"
+      onSubmit={handleSubmit}
+      noValidate
+      aria-busy={isImporting}
+    >
       <label
         htmlFor="instagram-url"
         className="block text-sm font-medium text-zinc-300"
@@ -69,7 +74,8 @@ export function InstagramImportForm() {
         className="mt-2 block w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
       />
       <p className="mt-2 text-xs leading-5 text-zinc-500">
-        ClipCrop will import the video and its original caption for editing.
+        Public Instagram Reels and video posts only. ClipCrop imports the video
+        and its original caption for editing.
       </p>
       {errorMessage ? (
         <p
