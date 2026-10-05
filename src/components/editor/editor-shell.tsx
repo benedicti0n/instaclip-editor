@@ -91,6 +91,20 @@ export function EditorShell() {
     setSelectedTextLayerId(layer.id);
   }
 
+  function handleSelectTextLayer(id: string) {
+    setSelectedTextLayerId(id);
+  }
+
+  function handleTextLayerChange(id: string, patch: Partial<TextLayer>) {
+    setTextLayers((layers) =>
+      layers.map((layer) =>
+        layer.id === id
+          ? clampTextLayerToCanvas({ ...layer, ...patch }, canvasSize)
+          : layer,
+      ),
+    );
+  }
+
   function handleScaleChange(nextScale: number) {
     const ratio =
       clampedVideoTransform.scale > 0
@@ -149,6 +163,9 @@ export function EditorShell() {
           transform={clampedVideoTransform}
           onTransformChange={handleTransformChange}
           textLayers={clampedTextLayers}
+          selectedTextLayerId={selectedTextLayerId}
+          onSelectTextLayer={handleSelectTextLayer}
+          onTextLayerChange={handleTextLayerChange}
         />
         <InspectorPanel
           aspectRatio={aspectRatio}
