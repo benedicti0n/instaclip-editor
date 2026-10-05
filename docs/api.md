@@ -44,19 +44,19 @@ Success — `200`:
 
 Errors — `{ "error": { "code": "...", "message": "..." } }`:
 
-| Status | Code | Meaning |
-| --- | --- | --- |
-| 400 | `INVALID_REQUEST` | Body missing/not JSON/not an object, `url` missing or not a string, or body over 8 KB (`413`) |
-| 400 | `INVALID_URL` | URL too long or not a valid public Instagram post URL |
-| 429 | `IMPORT_BUSY` | More than `CLIPCROP_MAX_CONCURRENT_IMPORTS` imports in flight on this instance |
-| 422 | `UNSUPPORTED_MEDIA` | Post is private, deleted, login-required, or has no downloadable video |
-| 422 | `VIDEO_TOO_LONG` | Duration exceeds `CLIPCROP_MAX_VIDEO_DURATION_SECONDS` |
-| 422 | `VIDEO_TOO_LARGE` | File size exceeds `CLIPCROP_MAX_VIDEO_BYTES` |
-| 502 | `EXTRACTION_FAILED` | yt-dlp could not download the post |
-| 503 | `YTDLP_UNAVAILABLE` | yt-dlp is not installed on the server |
-| 503 | `FFPROBE_UNAVAILABLE` | ffprobe is not installed on the server |
-| 504 | `TIMEOUT` | Extraction exceeded the server timeout |
-| 500 | `INTERNAL_ERROR` | Unexpected failure |
+| Status | Code                  | Meaning                                                                                       |
+| ------ | --------------------- | --------------------------------------------------------------------------------------------- |
+| 400    | `INVALID_REQUEST`     | Body missing/not JSON/not an object, `url` missing or not a string, or body over 8 KB (`413`) |
+| 400    | `INVALID_URL`         | URL too long or not a valid public Instagram post URL                                         |
+| 429    | `IMPORT_BUSY`         | More than `CLIPCROP_MAX_CONCURRENT_IMPORTS` imports in flight on this instance                |
+| 422    | `UNSUPPORTED_MEDIA`   | Post is private, deleted, login-required, or has no downloadable video                        |
+| 422    | `VIDEO_TOO_LONG`      | Duration exceeds `CLIPCROP_MAX_VIDEO_DURATION_SECONDS`                                        |
+| 422    | `VIDEO_TOO_LARGE`     | File size exceeds `CLIPCROP_MAX_VIDEO_BYTES`                                                  |
+| 502    | `EXTRACTION_FAILED`   | yt-dlp could not download the post                                                            |
+| 503    | `YTDLP_UNAVAILABLE`   | yt-dlp is not installed on the server                                                         |
+| 503    | `FFPROBE_UNAVAILABLE` | ffprobe is not installed on the server                                                        |
+| 504    | `TIMEOUT`             | Extraction exceeded the server timeout                                                        |
+| 500    | `INTERNAL_ERROR`      | Unexpected failure                                                                            |
 
 Guarantees:
 
@@ -74,12 +74,12 @@ Streams an imported video. Used by the editor preview and export pipeline.
 
 Responses:
 
-| Status | Condition | Headers |
-| --- | --- | --- |
-| `200` | No/invalid `Range` header | `Content-Type`, `Content-Length`, `Accept-Ranges: bytes`, `Cache-Control: no-store` |
-| `206` | Valid `Range: bytes=...` | Same plus `Content-Range: bytes <start>-<end>/<size>` and ranged `Content-Length` |
-| `416` | Unsatisfiable range | `Content-Range: bytes */<size>`, `Accept-Ranges: bytes` |
-| `404` | Unknown/invalid id, missing file, or path outside the workspace | Plain text `Not found` |
+| Status | Condition                                                       | Headers                                                                             |
+| ------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `200`  | No/invalid `Range` header                                       | `Content-Type`, `Content-Length`, `Accept-Ranges: bytes`, `Cache-Control: no-store` |
+| `206`  | Valid `Range: bytes=...`                                        | Same plus `Content-Range: bytes <start>-<end>/<size>` and ranged `Content-Length`   |
+| `416`  | Unsatisfiable range                                             | `Content-Range: bytes */<size>`, `Accept-Ranges: bytes`                             |
+| `404`  | Unknown/invalid id, missing file, or path outside the workspace | Plain text `Not found`                                                              |
 
 Supported range forms: `bytes=start-`, `bytes=start-end`, and `bytes=-suffix`.
 Content types: `mp4`/`m4v` → `video/mp4`, `mov` → `video/quicktime`, `webm` →
@@ -103,7 +103,10 @@ Healthy — `200`:
 Degraded — `503`:
 
 ```json
-{ "status": "degraded", "tools": { "ytDlp": false, "ffprobe": true, "ffmpeg": true } }
+{
+  "status": "degraded",
+  "tools": { "ytDlp": false, "ffprobe": true, "ffmpeg": true }
+}
 ```
 
 `ytDlp` and `ffprobe` are required; `ffmpeg` is reported for diagnostics only

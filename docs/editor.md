@@ -18,13 +18,13 @@ it.
 Every composition is rendered on a canvas whose size is derived from the
 selected aspect ratio preset:
 
-| Preset | Canvas |
-| --- | --- |
+| Preset   | Canvas                            |
+| -------- | --------------------------------- |
 | Original | Source dimensions (e.g. 720×1280) |
-| 9:16 | 1080×1920 |
-| 4:5 | 1080×1350 |
-| 1:1 | 1080×1080 |
-| 16:9 | 1920×1080 |
+| 9:16     | 1080×1920                         |
+| 4:5      | 1080×1350                         |
+| 1:1      | 1080×1080                         |
+| 16:9     | 1920×1080                         |
 
 The preview surface always matches the canvas aspect ratio, so what you see is
 proportional to what is exported. Changing the preset re-clamps the video
@@ -61,12 +61,12 @@ transform and every text layer to the new canvas.
 Active only when a text layer is selected and focus is not in an input, select,
 textarea, or contenteditable element:
 
-| Key | Action |
-| --- | --- |
-| `Delete` / `Backspace` | Delete the selected layer |
-| `Escape` | Deselect |
-| Arrow keys | Nudge 1 composition pixel |
-| `Shift` + arrows | Nudge 10 composition pixels |
+| Key                    | Action                      |
+| ---------------------- | --------------------------- |
+| `Delete` / `Backspace` | Delete the selected layer   |
+| `Escape`               | Deselect                    |
+| Arrow keys             | Nudge 1 composition pixel   |
+| `Shift` + arrows       | Nudge 10 composition pixels |
 
 Delete ignores modifier keys and key repeats. Arrow nudges ignore modifier
 keys. There are no single-letter shortcuts, so typing in the inspector is

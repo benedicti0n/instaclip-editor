@@ -39,34 +39,34 @@ below as the checklist to re-implement rather than an existing suite.
 
 ## 3. Import scenarios
 
-| Scenario | Setup | Expected |
-| --- | --- | --- |
-| Happy path (fake) | `yt-dlp` shim that copies a local MP4 and prints metadata JSON | `200`, editor opens with media, metadata set |
-| Happy path (real) | real yt-dlp, public Instagram Reel | `200`, correct duration/dimensions/caption |
-| Captionless post | real square Reel without caption | `200`, "No caption" disabled button |
-| Private/deleted post | fake yt-dlp exiting with an error | `422 UNSUPPORTED_MEDIA`, readable message |
-| Slow extraction | fake yt-dlp sleeping past timeout | `504 TIMEOUT` |
-| Missing yt-dlp | server started without yt-dlp on `PATH` | `503 YTDLP_UNAVAILABLE`, form shows message |
-| Missing ffprobe | server started without ffprobe on `PATH` | `503 FFPROBE_UNAVAILABLE` |
-| Invalid URL | `not-a-url`, `https://example.com/reel/x` | `400 INVALID_URL`, no process spawned |
-| Oversized body | > 8 KB JSON | `413 INVALID_REQUEST` |
-| Too long / too large | limits set very low via env | `422 VIDEO_TOO_LONG` / `422 VIDEO_TOO_LARGE`, workspace removed |
-| Concurrency | two simultaneous imports, limit 1 | second gets `429 IMPORT_BUSY` |
+| Scenario             | Setup                                                          | Expected                                                        |
+| -------------------- | -------------------------------------------------------------- | --------------------------------------------------------------- |
+| Happy path (fake)    | `yt-dlp` shim that copies a local MP4 and prints metadata JSON | `200`, editor opens with media, metadata set                    |
+| Happy path (real)    | real yt-dlp, public Instagram Reel                             | `200`, correct duration/dimensions/caption                      |
+| Captionless post     | real square Reel without caption                               | `200`, "No caption" disabled button                             |
+| Private/deleted post | fake yt-dlp exiting with an error                              | `422 UNSUPPORTED_MEDIA`, readable message                       |
+| Slow extraction      | fake yt-dlp sleeping past timeout                              | `504 TIMEOUT`                                                   |
+| Missing yt-dlp       | server started without yt-dlp on `PATH`                        | `503 YTDLP_UNAVAILABLE`, form shows message                     |
+| Missing ffprobe      | server started without ffprobe on `PATH`                       | `503 FFPROBE_UNAVAILABLE`                                       |
+| Invalid URL          | `not-a-url`, `https://example.com/reel/x`                      | `400 INVALID_URL`, no process spawned                           |
+| Oversized body       | > 8 KB JSON                                                    | `413 INVALID_REQUEST`                                           |
+| Too long / too large | limits set very low via env                                    | `422 VIDEO_TOO_LONG` / `422 VIDEO_TOO_LARGE`, workspace removed |
+| Concurrency          | two simultaneous imports, limit 1                              | second gets `429 IMPORT_BUSY`                                   |
 
 Server-side checks after each failure: the temp workspace is deleted and no
 partial import remains.
 
 ## 4. Media route scenarios
 
-| Request | Expected |
-| --- | --- |
-| `GET /api/imports/<id>/video` | `200`, `Accept-Ranges: bytes`, correct `Content-Type`/`Content-Length` |
-| `Range: bytes=0-99` | `206`, `Content-Range: bytes 0-99/<size>`, 100 bytes |
-| `Range: bytes=-100` | `206`, last 100 bytes |
-| `Range: bytes=<size>-` | `416`, `Content-Range: bytes */<size>` |
-| Unknown UUID | `404` |
-| Malformed id / traversal attempt | `404` |
-| `HEAD` | Same headers as `GET`, no body |
+| Request                          | Expected                                                               |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `GET /api/imports/<id>/video`    | `200`, `Accept-Ranges: bytes`, correct `Content-Type`/`Content-Length` |
+| `Range: bytes=0-99`              | `206`, `Content-Range: bytes 0-99/<size>`, 100 bytes                   |
+| `Range: bytes=-100`              | `206`, last 100 bytes                                                  |
+| `Range: bytes=<size>-`           | `416`, `Content-Range: bytes */<size>`                                 |
+| Unknown UUID                     | `404`                                                                  |
+| Malformed id / traversal attempt | `404`                                                                  |
+| `HEAD`                           | Same headers as `GET`, no body                                         |
 
 ## 5. Editor regression scenarios
 
@@ -119,12 +119,12 @@ Run against `pnpm start`:
 
 Checked at:
 
-| Viewport | Purpose |
-| --- | --- |
-| 1440×900 | Desktop layout |
+| Viewport | Purpose                 |
+| -------- | ----------------------- |
+| 1440×900 | Desktop layout          |
 | 834×1112 | Tablet / narrow desktop |
-| 390×844 | Phone |
-| 320×568 | Small phone |
+| 390×844  | Phone                   |
+| 320×568  | Small phone             |
 
 At each size: no horizontal overflow, toolbar wraps without clipping, canvas
 keeps its aspect ratio, drag and selection stay aligned, playback bar remains

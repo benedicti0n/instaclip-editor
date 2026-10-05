@@ -113,13 +113,13 @@ flowchart LR
 
 Requirements:
 
-| Requirement | Notes |
-| --- | --- |
-| Node.js 20.9+ | Node 22 LTS recommended |
-| pnpm | Version pinned in `package.json` (`packageManager`) |
-| yt-dlp | Required; install with `brew install yt-dlp` or `pipx install yt-dlp` |
-| ffprobe | Required; comes with FFmpeg (`brew install ffmpeg`) |
-| ffmpeg | Optional; yt-dlp may use it to merge separate streams |
+| Requirement   | Notes                                                                 |
+| ------------- | --------------------------------------------------------------------- |
+| Node.js 20.9+ | Node 22 LTS recommended                                               |
+| pnpm          | Version pinned in `package.json` (`packageManager`)                   |
+| yt-dlp        | Required; install with `brew install yt-dlp` or `pipx install yt-dlp` |
+| ffprobe       | Required; comes with FFmpeg (`brew install ffmpeg`)                   |
+| ffmpeg        | Optional; yt-dlp may use it to merge separate streams                 |
 
 ```bash
 pnpm install
@@ -157,12 +157,12 @@ server after installing missing tools.
 All limits have sane defaults and are validated at startup; invalid values log a
 warning and fall back to the default.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `CLIPCROP_MAX_VIDEO_DURATION_SECONDS` | `300` | Reject longer imports (`422 VIDEO_TOO_LONG`) |
-| `CLIPCROP_MAX_VIDEO_BYTES` | `209715200` (200 MB) | Reject larger downloads (`422 VIDEO_TOO_LARGE`) |
-| `CLIPCROP_MAX_CONCURRENT_IMPORTS` | `2` | Per-instance yt-dlp concurrency (`429 IMPORT_BUSY`) |
-| `CLIPCROP_IMPORT_TTL_HOURS` | `6` | Age after which temp imports are cleaned up |
+| Variable                              | Default              | Purpose                                             |
+| ------------------------------------- | -------------------- | --------------------------------------------------- |
+| `CLIPCROP_MAX_VIDEO_DURATION_SECONDS` | `300`                | Reject longer imports (`422 VIDEO_TOO_LONG`)        |
+| `CLIPCROP_MAX_VIDEO_BYTES`            | `209715200` (200 MB) | Reject larger downloads (`422 VIDEO_TOO_LARGE`)     |
+| `CLIPCROP_MAX_CONCURRENT_IMPORTS`     | `2`                  | Per-instance yt-dlp concurrency (`429 IMPORT_BUSY`) |
+| `CLIPCROP_IMPORT_TTL_HOURS`           | `6`                  | Age after which temp imports are cleaned up         |
 
 ## Docker
 
