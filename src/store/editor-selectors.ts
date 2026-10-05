@@ -26,6 +26,10 @@ export function selectSelectedTextLayer(state: EditorState): TextLayer | null {
   );
 }
 
+export function selectHasTextLayers(state: EditorState): boolean {
+  return state.textLayers.length > 0;
+}
+
 export function selectClampedVideoScale(state: EditorState): number {
   const sourceSize = getSourceSize(state.sourceMetadata);
   const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);

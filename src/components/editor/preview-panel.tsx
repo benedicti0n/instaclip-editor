@@ -34,7 +34,10 @@ type DragState = {
   startTransform: VideoTransform;
   previewWidth: number;
   previewHeight: number;
+  moved: boolean;
 };
+
+const CLICK_MOVE_THRESHOLD_PX = 4;
 
 export function PreviewPanel({ playerRef }: PreviewPanelProps) {
   const document = useEditorStore(useShallow(selectEditorDocument));
@@ -90,6 +93,7 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
       startTransform: transform,
       previewWidth: rect.width,
       previewHeight: rect.height,
+      moved: false,
     };
     setIsDragging(true);
   }
@@ -100,12 +104,20 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
       return;
     }
 
+    const clientDeltaX = event.clientX - drag.startClientX;
+    const clientDeltaY = event.clientY - drag.startClientY;
+
+    if (
+      Math.abs(clientDeltaX) > CLICK_MOVE_THRESHOLD_PX ||
+      Math.abs(clientDeltaY) > CLICK_MOVE_THRESHOLD_PX
+    ) {
+      drag.moved = true;
+    }
+
     const compositionDeltaX =
-      (event.clientX - drag.startClientX) *
-      (canvasSize.width / drag.previewWidth);
+      clientDeltaX * (canvasSize.width / drag.previewWidth);
     const compositionDeltaY =
-      (event.clientY - drag.startClientY) *
-      (canvasSize.height / drag.previewHeight);
+      clientDeltaY * (canvasSize.height / drag.previewHeight);
 
     setVideoTransform({
       ...drag.startTransform,
@@ -114,17 +126,25 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
     });
   }
 
-  function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+  function finishPointerInteraction(
+    event: ReactPointerEvent<HTMLDivElement>,
+    deselectOnClick: boolean,
+  ) {
     const drag = dragStateRef.current;
     if (!drag || drag.pointerId !== event.pointerId) {
       return;
     }
 
+    const wasClick = !drag.moved;
     dragStateRef.current = null;
     setIsDragging(false);
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    if (deselectOnClick && wasClick) {
+      selectTextLayer(null);
     }
   }
 
@@ -146,8 +166,8 @@ export function PreviewPanel({ playerRef }: PreviewPanelProps) {
         }
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerEnd}
-        onPointerCancel={handlePointerEnd}
+        onPointerUp={(event) => finishPointerInteraction(event, true)}
+        onPointerCancel={(event) => finishPointerInteraction(event, false)}
       >
         <Player
           ref={playerRef}

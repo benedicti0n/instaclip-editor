@@ -17,6 +17,7 @@ import {
 import { useEditorStore } from "@/store/editor-store";
 import {
   selectClampedVideoScale,
+  selectHasTextLayers,
   selectSelectedTextLayer,
 } from "@/store/editor-selectors";
 import type { TextFontFamily, TextFontWeight } from "@/types/editor";
@@ -33,6 +34,7 @@ export function InspectorPanel() {
     (state) => state.resetVideoTransform,
   );
   const selectedTextLayer = useEditorStore(selectSelectedTextLayer);
+  const hasTextLayers = useEditorStore(selectHasTextLayers);
   const addTextLayer = useEditorStore((state) => state.addTextLayer);
   const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
   const deleteTextLayer = useEditorStore((state) => state.deleteTextLayer);
@@ -289,7 +291,9 @@ export function InspectorPanel() {
           </div>
         ) : (
           <p className="mt-3 text-xs leading-5 text-zinc-500">
-            Add text to place it over the video.
+            {hasTextLayers
+              ? "Select a text layer on the canvas to edit it."
+              : "Add text to place it over the video."}
           </p>
         )}
       </InspectorSection>
