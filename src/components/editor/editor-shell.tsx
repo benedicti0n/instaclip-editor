@@ -92,9 +92,11 @@ export function EditorShell() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-3.5rem)] lg:flex-none lg:overflow-hidden">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-zinc-800 bg-zinc-950 px-4 sm:px-6">
-        <h1 className="text-sm font-medium text-zinc-300">Editor</h1>
-        <div className="flex items-center gap-2">
+      <header className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b border-zinc-800 bg-zinc-950 px-4 py-2 sm:px-6 lg:h-12 lg:flex-nowrap lg:py-0">
+        <h1 className="sr-only text-sm font-medium text-zinc-300 sm:not-sr-only">
+          Editor
+        </h1>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Button
             variant="outline"
             size="sm"
