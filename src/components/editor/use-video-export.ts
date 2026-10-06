@@ -11,12 +11,11 @@ import {
 import { ClipComposition } from "@/remotion/compositions/clip-composition";
 import { createExportConfiguration } from "@/remotion/export-config";
 import { downloadBlob } from "@/lib/download";
+import { getDownloadFilenames } from "@/lib/filenames";
 import { selectEditorDocument } from "@/store/editor-selectors";
 import { useEditorStore } from "@/store/editor-store";
 
 type VideoExportStatus = "idle" | "rendering" | "success" | "error";
-
-const EXPORT_FILE_NAME = "edited-video.mp4";
 
 const EXPORT_CONTAINER: WebRendererContainer = "mp4";
 
@@ -104,7 +103,7 @@ export function useVideoExport() {
         return;
       }
 
-      downloadBlob(blob, EXPORT_FILE_NAME);
+      downloadBlob(blob, getDownloadFilenames(document.media).video);
       setStatus("success");
     } catch (caught) {
       if (controller.signal.aborted) {

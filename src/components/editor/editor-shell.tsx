@@ -10,19 +10,21 @@ import { useEditorKeyboard } from "./use-editor-keyboard";
 import { useVideoExport } from "./use-video-export";
 import { Button } from "@/components/ui/button";
 import { downloadBlob } from "@/lib/download";
+import { getDownloadFilenames } from "@/lib/filenames";
 import { useEditorStore } from "@/store/editor-store";
 import { selectIsDocumentDirty } from "@/store/editor-selectors";
-
-const CAPTION_FILE_NAME = "caption.txt";
 
 export function EditorShell() {
   const router = useRouter();
   const playerRef = useRef<PlayerRef>(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   useEditorKeyboard();
-  const mediaSrc = useEditorStore((state) => state.media.src);
-  const mediaKind = useEditorStore((state) => state.media.kind);
-  const caption = useEditorStore((state) => state.media.caption);
+  const media = useEditorStore((state) => state.media);
+  const mediaSrc = media.src;
+  const mediaKind = media.kind;
+  const caption = media.caption;
+  const { video: videoFileName, caption: captionFileName } =
+    getDownloadFilenames(media);
   const isDirty = useEditorStore(selectIsDocumentDirty);
   const loadSourceMetadata = useEditorStore(
     (state) => state.loadSourceMetadata,
@@ -53,7 +55,7 @@ export function EditorShell() {
 
     downloadBlob(
       new Blob([caption], { type: "text/plain;charset=utf-8" }),
-      CAPTION_FILE_NAME,
+      captionFileName,
     );
   }
 
@@ -165,7 +167,7 @@ export function EditorShell() {
           role="status"
           className="border-b border-zinc-800 bg-zinc-950 px-4 py-2 text-xs text-zinc-400 sm:px-6"
         >
-          Export complete — edited-video.mp4 saved.
+          Export complete — {videoFileName} saved.
         </p>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
