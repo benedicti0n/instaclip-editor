@@ -80,18 +80,27 @@ export function clampCropRect(rect: CropRect): CropRect {
  * Applies a drag delta (in normalized source units) to a crop rect. The
  * `handle` names which edges move; `"move"` translates the whole rect. The
  * result always satisfies the crop-rect invariants.
+ *
+ * When `constraint` is given, the crop keeps the output aspect ratio (in
+ * source pixels), so the selected region maps exactly onto the output canvas.
+ * Without it (free aspect), the rect resizes freely.
  */
 export function resizeCropRect(
   rect: CropRect,
   handle: CropHandle,
   deltaX: number,
   deltaY: number,
+  constraint?: CropResizeConstraint,
 ): CropRect {
   if (handle === "move") {
     const x = Math.min(Math.max(rect.x + deltaX, 0), 1 - rect.width);
     const y = Math.min(Math.max(rect.y + deltaY, 0), 1 - rect.height);
 
     return { x, y, width: rect.width, height: rect.height };
+  }
+
+  if (constraint) {
+    return resizeCropRectConstrained(rect, handle, deltaX, deltaY, constraint);
   }
 
   let left = rect.x;
@@ -113,6 +122,203 @@ export function resizeCropRect(
   }
 
   return { x: left, y: top, width: right - left, height: bottom - top };
+}
+
+export type CropResizeConstraint = {
+  sourceSize: VideoSize;
+  /** Output aspect ratio (width / height) the crop region must keep. */
+  aspectRatio: number;
+};
+
+function resizeCropRectConstrained(
+  rect: CropRect,
+  handle: Exclude<CropHandle, "move">,
+  deltaX: number,
+  deltaY: number,
+  { sourceSize, aspectRatio }: CropResizeConstraint,
+): CropRect {
+  const ratio = (aspectRatio * sourceSize.height) / sourceSize.width;
+
+  const fromRight = handle.includes("e");
+  const fromBottom = handle.includes("s");
+  const horizontal = handle.includes("e") || handle.includes("w");
+  const vertical = handle.includes("n") || handle.includes("s");
+
+  const anchorX = fromRight ? rect.x : rect.x + rect.width;
+  const anchorY = fromBottom ? rect.y : rect.y + rect.height;
+
+  let width: number;
+  let height: number;
+
+  if (horizontal && !vertical) {
+    width = rect.width + (fromRight ? deltaX : -deltaX);
+    height = width / ratio;
+    const centerY = rect.y + rect.height / 2;
+    const maxHeight = 2 * Math.min(centerY, 1 - centerY);
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * ratio;
+    }
+  } else if (vertical && !horizontal) {
+    height = rect.height + (fromBottom ? deltaY : -deltaY);
+    width = height * ratio;
+    const centerX = rect.x + rect.width / 2;
+    const maxWidth = 2 * Math.min(centerX, 1 - centerX);
+    if (width > maxWidth) {
+      width = maxWidth;
+      height = width / ratio;
+    }
+  } else {
+    if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+      width = rect.width + (fromRight ? deltaX : -deltaX);
+      height = width / ratio;
+    } else {
+      height = rect.height + (fromBottom ? deltaY : -deltaY);
+      width = height * ratio;
+    }
+
+    const maxWidth = fromRight ? 1 - anchorX : anchorX;
+    const maxHeight = fromBottom ? 1 - anchorY : anchorY;
+    if (width > maxWidth) {
+      width = maxWidth;
+      height = width / ratio;
+    }
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * ratio;
+    }
+  }
+
+  if (width < MIN_CROP_FRACTION) {
+    width = MIN_CROP_FRACTION;
+    height = width / ratio;
+  }
+  if (height < MIN_CROP_FRACTION) {
+    height = MIN_CROP_FRACTION;
+    width = height * ratio;
+  }
+
+  width = Math.min(width, 1);
+  height = Math.min(height, 1);
+
+  let x: number;
+  let y: number;
+
+  if (horizontal && !vertical) {
+    const centerY = rect.y + rect.height / 2;
+    x = fromRight ? anchorX : anchorX - width;
+    y = centerY - height / 2;
+  } else if (vertical && !horizontal) {
+    const centerX = rect.x + rect.width / 2;
+    y = fromBottom ? anchorY : anchorY - height;
+    x = centerX - width / 2;
+  } else {
+    x = fromRight ? anchorX : anchorX - width;
+    y = fromBottom ? anchorY : anchorY - height;
+  }
+
+  x = Math.min(Math.max(x, 0), Math.max(0, 1 - width));
+  y = Math.min(Math.max(y, 0), Math.max(0, 1 - height));
+
+  return { x, y, width, height };
+}
+
+/**
+ * The output aspect ratio the crop must keep for a given preset, or `null`
+ * when the preset is free and the crop defines the shape instead.
+ */
+export function getCropAspectConstraint(
+  preset: AspectRatioPreset,
+  canvasSize: VideoSize,
+): number | null {
+  return preset === "free" ? null : canvasSize.width / canvasSize.height;
+}
+
+/**
+ * The largest rect of the given aspect contained in `rect`, centered on its
+ * center. Used when the output aspect ratio changes so the existing selection
+ * is preserved as much as possible. `null` aspect clamps the rect unchanged.
+ */
+export function fitCropRectToAspect(
+  rect: CropRect,
+  sourceSize: VideoSize,
+  aspectRatio: number | null,
+): CropRect {
+  if (aspectRatio === null) {
+    return clampCropRect(rect);
+  }
+
+  const ratio = (aspectRatio * sourceSize.height) / sourceSize.width;
+  let width = rect.width;
+  let height = width / ratio;
+
+  if (height > rect.height) {
+    height = rect.height;
+    width = height * ratio;
+  }
+  if (width < MIN_CROP_FRACTION) {
+    width = MIN_CROP_FRACTION;
+    height = width / ratio;
+  }
+  if (height < MIN_CROP_FRACTION) {
+    height = MIN_CROP_FRACTION;
+    width = height * ratio;
+  }
+
+  width = Math.min(width, 1);
+  height = Math.min(height, 1);
+
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+
+  return {
+    x: Math.min(Math.max(centerX - width / 2, 0), 1 - width),
+    y: Math.min(Math.max(centerY - height / 2, 0), 1 - height),
+    width,
+    height,
+  };
+}
+
+/**
+ * Forces a rect to satisfy the given aspect ratio while preserving its center
+ * and (where possible) its width. Idempotent for rects already produced by
+ * `resizeCropRect` with the same constraint; used as a store-level guarantee.
+ * `null` aspect just clamps the rect.
+ */
+export function normalizeCropRectToAspect(
+  rect: CropRect,
+  sourceSize: VideoSize,
+  aspectRatio: number | null,
+): CropRect {
+  if (aspectRatio === null) {
+    return clampCropRect(rect);
+  }
+
+  const ratio = (aspectRatio * sourceSize.height) / sourceSize.width;
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+
+  let width = Math.max(MIN_CROP_FRACTION, Math.min(rect.width, 1));
+  let height = width / ratio;
+
+  if (height > 1) {
+    height = 1;
+    width = height * ratio;
+  }
+  if (height < MIN_CROP_FRACTION) {
+    height = MIN_CROP_FRACTION;
+    width = height * ratio;
+  }
+
+  width = Math.min(width, 1);
+  height = Math.min(height, 1);
+
+  return {
+    x: Math.min(Math.max(centerX - width / 2, 0), 1 - width),
+    y: Math.min(Math.max(centerY - height / 2, 0), 1 - height),
+    width,
+    height,
+  };
 }
 
 export function getSourceSize(metadata: VideoMetadata): VideoSize {
@@ -166,11 +372,21 @@ export const ASPECT_RATIO_PRESETS: ReadonlyArray<{
   { value: "4:5", label: "4:5" },
   { value: "1:1", label: "1:1" },
   { value: "16:9", label: "16:9" },
+  { value: "free", label: "Free" },
 ];
+
+/**
+ * Encoders require even dimensions; rounds a computed canvas edge to the
+ * nearest even number of at least 2 pixels.
+ */
+function toEvenDimension(value: number): number {
+  return Math.max(2, Math.round(value / 2) * 2);
+}
 
 export function getCanvasSize(
   preset: AspectRatioPreset,
   sourceSize: VideoSize,
+  cropRect: CropRect,
 ): VideoSize {
   switch (preset) {
     case "original":
@@ -183,6 +399,14 @@ export function getCanvasSize(
       return { width: 1080, height: 1080 };
     case "16:9":
       return { width: 1920, height: 1080 };
+    case "free": {
+      const crop = clampCropRect(cropRect);
+
+      return {
+        width: toEvenDimension(sourceSize.width * crop.width),
+        height: toEvenDimension(sourceSize.height * crop.height),
+      };
+    }
   }
 }
 

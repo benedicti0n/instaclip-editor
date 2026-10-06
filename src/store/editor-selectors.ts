@@ -34,7 +34,11 @@ export function selectHasTextLayers(state: EditorState): boolean {
 
 export function selectClampedVideoScale(state: EditorState): number {
   const sourceSize = getSourceSize(state.sourceMetadata);
-  const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
+  const canvasSize = getCanvasSize(
+    state.aspectRatio,
+    sourceSize,
+    state.cropRect,
+  );
   const cropSize = getCropSize(sourceSize, state.cropRect);
 
   return clampVideoTransform(state.videoTransform, cropSize, canvasSize).scale;

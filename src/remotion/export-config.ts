@@ -1,4 +1,5 @@
 import {
+  clampCropRect,
   getCanvasSize,
   getDurationInFrames,
   getSourceSize,
@@ -20,7 +21,8 @@ export function createExportConfiguration(
   document: EditorDocument,
 ): ExportConfiguration {
   const sourceSize = getSourceSize(document.sourceMetadata);
-  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize);
+  const cropRect = clampCropRect(document.cropRect);
+  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize, cropRect);
 
   return {
     inputProps: createClipRenderInput(document),

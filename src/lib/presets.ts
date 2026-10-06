@@ -2,8 +2,10 @@ import {
   clampCropRect,
   clampVideoTransform,
   getCanvasSize,
+  getCropAspectConstraint,
   getCropSize,
   getSourceSize,
+  normalizeCropRectToAspect,
 } from "@/lib/editor";
 import {
   clampTextLayerToCanvas,
@@ -75,6 +77,7 @@ const ASPECT_RATIOS: ReadonlySet<string> = new Set([
   "4:5",
   "1:1",
   "16:9",
+  "free",
 ]);
 
 const FONT_FAMILIES: ReadonlySet<string> = new Set([
@@ -107,8 +110,8 @@ export function createPreset(
   document: EditorDocument,
 ): EditorPreset {
   const sourceSize = getSourceSize(document.sourceMetadata);
-  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize);
   const cropRect = clampCropRect(document.cropRect);
+  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize, cropRect);
   const cropSize = getCropSize(sourceSize, cropRect);
   const transform = clampVideoTransform(
     document.videoTransform,
@@ -157,8 +160,17 @@ export function applyPresetToDocument(
   sourceMetadata: VideoMetadata,
 ): AppliedPreset {
   const sourceSize = getSourceSize(sourceMetadata);
-  const canvasSize = getCanvasSize(preset.aspectRatio, sourceSize);
-  const cropRect = clampCropRect(preset.cropRect);
+  const baseCanvasSize = getCanvasSize(
+    preset.aspectRatio,
+    sourceSize,
+    preset.cropRect,
+  );
+  const cropRect = normalizeCropRectToAspect(
+    clampCropRect(preset.cropRect),
+    sourceSize,
+    getCropAspectConstraint(preset.aspectRatio, baseCanvasSize),
+  );
+  const canvasSize = getCanvasSize(preset.aspectRatio, sourceSize, cropRect);
   const cropSize = getCropSize(sourceSize, cropRect);
 
   const videoTransform = clampVideoTransform(

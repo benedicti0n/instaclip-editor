@@ -26,8 +26,8 @@ export function createClipRenderInput(
   document: EditorDocument,
 ): ClipRenderInput {
   const sourceSize = getSourceSize(document.sourceMetadata);
-  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize);
   const cropRect = clampCropRect(document.cropRect);
+  const canvasSize = getCanvasSize(document.aspectRatio, sourceSize, cropRect);
   const cropSize = getCropSize(sourceSize, cropRect);
 
   return {

@@ -1,4 +1,9 @@
-export type AspectRatioPreset = "original" | "9:16" | "4:5" | "1:1" | "16:9";
+/**
+ * Output shape of the composition. `"free"` derives the canvas from the crop
+ * rectangle's pixel dimensions, so the crop region defines the output exactly.
+ */
+export type AspectRatioPreset =
+  "original" | "9:16" | "4:5" | "1:1" | "16:9" | "free";
 
 /**
  * Video framing relative to the output canvas.

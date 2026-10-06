@@ -2,9 +2,12 @@ import { create } from "zustand";
 import {
   clampCropRect,
   clampVideoTransform,
+  fitCropRectToAspect,
   getCanvasSize,
+  getCropAspectConstraint,
   getCropSize,
   getSourceSize,
+  normalizeCropRectToAspect,
   DEFAULT_ASPECT_RATIO,
   DEFAULT_CROP_RECT,
   DEFAULT_VIDEO_TRANSFORM,
@@ -61,7 +64,11 @@ function getGeometry(document: EditorDocument) {
 
   return {
     sourceSize,
-    canvasSize: getCanvasSize(document.aspectRatio, sourceSize),
+    canvasSize: getCanvasSize(
+      document.aspectRatio,
+      sourceSize,
+      document.cropRect,
+    ),
     cropSize: getCropSize(sourceSize, document.cropRect),
   };
 }
@@ -99,11 +106,22 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
   setSourceMetadata: (metadata) =>
     set((state) => {
       const sourceSize = getSourceSize(metadata);
-      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
-      const cropSize = getCropSize(sourceSize, state.cropRect);
+      const baseCanvasSize = getCanvasSize(
+        state.aspectRatio,
+        sourceSize,
+        state.cropRect,
+      );
+      const cropRect = normalizeCropRectToAspect(
+        state.cropRect,
+        sourceSize,
+        getCropAspectConstraint(state.aspectRatio, baseCanvasSize),
+      );
+      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize, cropRect);
+      const cropSize = getCropSize(sourceSize, cropRect);
 
       return {
         sourceMetadata: metadata,
+        cropRect,
         videoTransform: clampVideoTransform(
           state.videoTransform,
           cropSize,
@@ -117,27 +135,44 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
 
   setAspectRatio: (preset) =>
     set((state) => {
-      const { sourceSize, cropSize } = getGeometry(state);
-      const nextCanvasSize = getCanvasSize(preset, sourceSize);
+      const sourceSize = getSourceSize(state.sourceMetadata);
+      const baseCanvasSize = getCanvasSize(preset, sourceSize, state.cropRect);
+      const constraint = getCropAspectConstraint(preset, baseCanvasSize);
+      const cropRect =
+        constraint === null
+          ? state.cropRect
+          : fitCropRectToAspect(state.cropRect, sourceSize, constraint);
+      const canvasSize = getCanvasSize(preset, sourceSize, cropRect);
+      const cropSize = getCropSize(sourceSize, cropRect);
 
       return {
         aspectRatio: preset,
+        cropRect,
         videoTransform: clampVideoTransform(
           state.videoTransform,
           cropSize,
-          nextCanvasSize,
+          canvasSize,
         ),
         textLayers: state.textLayers.map((layer) =>
-          clampTextLayerToCanvas(layer, nextCanvasSize),
+          clampTextLayerToCanvas(layer, canvasSize),
         ),
       };
     }),
 
   setCropRect: (rect) =>
     set((state) => {
-      const cropRect = clampCropRect(rect);
       const sourceSize = getSourceSize(state.sourceMetadata);
-      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
+      const baseCanvasSize = getCanvasSize(
+        state.aspectRatio,
+        sourceSize,
+        state.cropRect,
+      );
+      const cropRect = normalizeCropRectToAspect(
+        clampCropRect(rect),
+        sourceSize,
+        getCropAspectConstraint(state.aspectRatio, baseCanvasSize),
+      );
+      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize, cropRect);
       const cropSize = getCropSize(sourceSize, cropRect);
 
       return {
@@ -147,17 +182,33 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
           cropSize,
           canvasSize,
         ),
+        textLayers: state.textLayers.map((layer) =>
+          clampTextLayerToCanvas(layer, canvasSize),
+        ),
       };
     }),
 
   resetCropRect: () =>
     set((state) => {
       const sourceSize = getSourceSize(state.sourceMetadata);
-      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
-      const cropSize = getCropSize(sourceSize, DEFAULT_CROP_RECT);
+      const baseCanvasSize = getCanvasSize(
+        state.aspectRatio,
+        sourceSize,
+        DEFAULT_CROP_RECT,
+      );
+      const constraint = getCropAspectConstraint(
+        state.aspectRatio,
+        baseCanvasSize,
+      );
+      const cropRect =
+        constraint === null
+          ? DEFAULT_CROP_RECT
+          : fitCropRectToAspect(DEFAULT_CROP_RECT, sourceSize, constraint);
+      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize, cropRect);
+      const cropSize = getCropSize(sourceSize, cropRect);
 
       return {
-        cropRect: DEFAULT_CROP_RECT,
+        cropRect,
         videoTransform: clampVideoTransform(
           state.videoTransform,
           cropSize,

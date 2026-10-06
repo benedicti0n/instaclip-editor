@@ -20,6 +20,8 @@ type CropOverlayProps = {
   cropRect: CropRect;
   previewWidth: number;
   playerRef: RefObject<PlayerRef | null>;
+  /** Output aspect ratio the crop must keep, or null for free-form crop. */
+  aspectConstraint: number | null;
   onCropRectChange: (rect: CropRect) => void;
   onExitCropMode: () => void;
 };
@@ -101,11 +103,17 @@ export function CropOverlay({
   cropRect,
   previewWidth,
   playerRef,
+  aspectConstraint,
   onCropRectChange,
   onExitCropMode,
 }: CropOverlayProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const dragStateRef = useRef<DragState | null>(null);
+
+  const constraint =
+    aspectConstraint === null
+      ? undefined
+      : { sourceSize, aspectRatio: aspectConstraint };
 
   const previewHeight =
     previewWidth > 0
@@ -214,7 +222,7 @@ export function CropOverlay({
     const deltaY = (event.clientY - drag.startClientY) / drag.boxHeight;
 
     onCropRectChange(
-      resizeCropRect(drag.startRect, drag.handle, deltaX, deltaY),
+      resizeCropRect(drag.startRect, drag.handle, deltaX, deltaY, constraint),
     );
   }
 
@@ -261,7 +269,9 @@ export function CropOverlay({
 
     event.preventDefault();
     event.stopPropagation();
-    onCropRectChange(resizeCropRect(cropRect, handle, deltaX, deltaY));
+    onCropRectChange(
+      resizeCropRect(cropRect, handle, deltaX, deltaY, constraint),
+    );
   }
 
   return (

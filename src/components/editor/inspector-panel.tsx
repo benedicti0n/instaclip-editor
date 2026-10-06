@@ -109,6 +109,12 @@ export function InspectorPanel() {
         >
           {isCropping ? "Done cropping" : "Edit crop"}
         </Button>
+        {isCropping ? (
+          <p className="mt-2 text-xs leading-5 text-zinc-500">
+            Drag the handles to choose the visible area. Fixed ratios keep the
+            crop locked to the output shape; pick Free for any shape.
+          </p>
+        ) : null}
         <div className="mt-4">
           <div className="flex items-center justify-between">
             <label
