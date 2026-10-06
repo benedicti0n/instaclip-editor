@@ -9,7 +9,7 @@ import { PreviewPanel } from "./preview-panel";
 import { useEditorKeyboard } from "./use-editor-keyboard";
 import { useVideoExport } from "./use-video-export";
 import { Button } from "@/components/ui/button";
-import { downloadBlob } from "@/lib/download";
+import { downloadBlob, downloadUrl } from "@/lib/download";
 import { getDownloadFilenames } from "@/lib/filenames";
 import { useEditorStore } from "@/store/editor-store";
 import { selectIsDocumentDirty } from "@/store/editor-selectors";
@@ -47,6 +47,10 @@ export function EditorShell() {
       ? "Export again"
       : "Export";
   const hasCaption = caption.length > 0;
+
+  function handleDownloadSource() {
+    downloadUrl(mediaSrc, videoFileName);
+  }
 
   function handleDownloadCaption() {
     if (!hasCaption) {
@@ -126,6 +130,9 @@ export function EditorShell() {
             disabled={isExporting}
           >
             New video
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadSource}>
+            Download source
           </Button>
           <Button
             variant="outline"
