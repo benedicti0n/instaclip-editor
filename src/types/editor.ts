@@ -22,6 +22,24 @@ export type VideoSize = {
   height: number;
 };
 
+/**
+ * A rectangular region of the source video, in normalized source coordinates.
+ *
+ * All values are fractions of the source dimensions: `x`/`y` are the top-left
+ * corner and `width`/`height` the size, each in the range 0..1. The crop rect
+ * is independent of the output canvas and of the preview size, so it survives
+ * aspect-ratio changes and can be stored in presets.
+ *
+ * Invariants (enforced by `clampCropRect`): 0 <= x, 0 <= y, x + width <= 1,
+ * y + height <= 1, and width/height are at least `MIN_CROP_FRACTION`.
+ */
+export type CropRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type VideoMetadata = {
   durationInSeconds: number;
   width: number;
@@ -57,6 +75,7 @@ export type EditorDocument = {
   media: MediaSource;
   sourceMetadata: VideoMetadata;
   aspectRatio: AspectRatioPreset;
+  cropRect: CropRect;
   videoTransform: VideoTransform;
   textLayers: TextLayer[];
 };

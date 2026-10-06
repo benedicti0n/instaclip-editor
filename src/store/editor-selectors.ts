@@ -1,6 +1,7 @@
 import {
   clampVideoTransform,
   getCanvasSize,
+  getCropSize,
   getDurationInFrames,
   getSourceSize,
   isEditorDocumentDirty,
@@ -14,6 +15,7 @@ export function selectEditorDocument(state: EditorState): EditorDocument {
     media: state.media,
     sourceMetadata: state.sourceMetadata,
     aspectRatio: state.aspectRatio,
+    cropRect: state.cropRect,
     videoTransform: state.videoTransform,
     textLayers: state.textLayers,
   };
@@ -33,9 +35,9 @@ export function selectHasTextLayers(state: EditorState): boolean {
 export function selectClampedVideoScale(state: EditorState): number {
   const sourceSize = getSourceSize(state.sourceMetadata);
   const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
+  const cropSize = getCropSize(sourceSize, state.cropRect);
 
-  return clampVideoTransform(state.videoTransform, sourceSize, canvasSize)
-    .scale;
+  return clampVideoTransform(state.videoTransform, cropSize, canvasSize).scale;
 }
 
 export function selectDurationInFrames(state: EditorState): number {

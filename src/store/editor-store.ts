@@ -1,9 +1,12 @@
 import { create } from "zustand";
 import {
+  clampCropRect,
   clampVideoTransform,
   getCanvasSize,
+  getCropSize,
   getSourceSize,
   DEFAULT_ASPECT_RATIO,
+  DEFAULT_CROP_RECT,
   DEFAULT_VIDEO_TRANSFORM,
 } from "@/lib/editor";
 import { getVideoMetadata } from "@/lib/media";
@@ -11,6 +14,7 @@ import { SAMPLE_MEDIA, SAMPLE_VIDEO_METADATA } from "@/lib/sample-video";
 import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
 import type {
   AspectRatioPreset,
+  CropRect,
   EditorDocument,
   MediaSource,
   TextLayer,
@@ -23,6 +27,8 @@ type EditorActions = {
   loadSourceMetadata: () => Promise<void>;
   setSourceMetadata: (metadata: VideoMetadata) => void;
   setAspectRatio: (preset: AspectRatioPreset) => void;
+  setCropRect: (rect: CropRect) => void;
+  resetCropRect: () => void;
   setVideoTransform: (transform: VideoTransform) => void;
   setVideoScale: (scale: number) => void;
   resetVideoTransform: () => void;
@@ -41,6 +47,7 @@ const INITIAL_DOCUMENT: EditorDocument = {
   media: SAMPLE_MEDIA,
   sourceMetadata: SAMPLE_VIDEO_METADATA,
   aspectRatio: DEFAULT_ASPECT_RATIO,
+  cropRect: DEFAULT_CROP_RECT,
   videoTransform: DEFAULT_VIDEO_TRANSFORM,
   textLayers: [],
 };
@@ -51,6 +58,7 @@ function getGeometry(document: EditorDocument) {
   return {
     sourceSize,
     canvasSize: getCanvasSize(document.aspectRatio, sourceSize),
+    cropSize: getCropSize(sourceSize, document.cropRect),
   };
 }
 
@@ -86,12 +94,13 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
     set((state) => {
       const sourceSize = getSourceSize(metadata);
       const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
+      const cropSize = getCropSize(sourceSize, state.cropRect);
 
       return {
         sourceMetadata: metadata,
         videoTransform: clampVideoTransform(
           state.videoTransform,
-          sourceSize,
+          cropSize,
           canvasSize,
         ),
         textLayers: state.textLayers.map((layer) =>
@@ -102,14 +111,14 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
 
   setAspectRatio: (preset) =>
     set((state) => {
-      const { sourceSize } = getGeometry(state);
+      const { sourceSize, cropSize } = getGeometry(state);
       const nextCanvasSize = getCanvasSize(preset, sourceSize);
 
       return {
         aspectRatio: preset,
         videoTransform: clampVideoTransform(
           state.videoTransform,
-          sourceSize,
+          cropSize,
           nextCanvasSize,
         ),
         textLayers: state.textLayers.map((layer) =>
@@ -118,21 +127,54 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
       };
     }),
 
-  setVideoTransform: (transform) =>
+  setCropRect: (rect) =>
     set((state) => {
-      const { sourceSize, canvasSize } = getGeometry(state);
+      const cropRect = clampCropRect(rect);
+      const sourceSize = getSourceSize(state.sourceMetadata);
+      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
+      const cropSize = getCropSize(sourceSize, cropRect);
 
       return {
-        videoTransform: clampVideoTransform(transform, sourceSize, canvasSize),
+        cropRect,
+        videoTransform: clampVideoTransform(
+          state.videoTransform,
+          cropSize,
+          canvasSize,
+        ),
+      };
+    }),
+
+  resetCropRect: () =>
+    set((state) => {
+      const sourceSize = getSourceSize(state.sourceMetadata);
+      const canvasSize = getCanvasSize(state.aspectRatio, sourceSize);
+      const cropSize = getCropSize(sourceSize, DEFAULT_CROP_RECT);
+
+      return {
+        cropRect: DEFAULT_CROP_RECT,
+        videoTransform: clampVideoTransform(
+          state.videoTransform,
+          cropSize,
+          canvasSize,
+        ),
+      };
+    }),
+
+  setVideoTransform: (transform) =>
+    set((state) => {
+      const { canvasSize, cropSize } = getGeometry(state);
+
+      return {
+        videoTransform: clampVideoTransform(transform, cropSize, canvasSize),
       };
     }),
 
   setVideoScale: (scale) =>
     set((state) => {
-      const { sourceSize, canvasSize } = getGeometry(state);
+      const { canvasSize, cropSize } = getGeometry(state);
       const current = clampVideoTransform(
         state.videoTransform,
-        sourceSize,
+        cropSize,
         canvasSize,
       );
       const ratio = current.scale > 0 ? scale / current.scale : 1;
@@ -144,7 +186,7 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
             y: current.y * ratio,
             scale,
           },
-          sourceSize,
+          cropSize,
           canvasSize,
         ),
       };

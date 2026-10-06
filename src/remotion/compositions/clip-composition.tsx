@@ -1,6 +1,6 @@
 import { Video } from "@remotion/media";
 import { AbsoluteFill, useVideoConfig } from "remotion";
-import { getRenderedVideoSize } from "@/lib/editor";
+import { getClipVideoLayout } from "@/lib/editor";
 import { getTextLayerPositionStyle, getTextLayerStyle } from "@/lib/text-layer";
 import type { ClipRenderInput } from "@/remotion/clip-render-input";
 
@@ -8,14 +8,16 @@ export function ClipComposition({
   src,
   sourceWidth,
   sourceHeight,
+  cropRect,
   transform,
   textLayers,
 }: ClipRenderInput) {
   const { width, height } = useVideoConfig();
-  const renderedSize = getRenderedVideoSize(
+  const layout = getClipVideoLayout(
     { width: sourceWidth, height: sourceHeight },
     { width, height },
-    transform.scale,
+    cropRect,
+    transform,
   );
 
   return (
@@ -25,9 +27,9 @@ export function ClipComposition({
           position: "absolute",
           left: "50%",
           top: "50%",
-          width: renderedSize.width,
-          height: renderedSize.height,
-          transform: `translate(-50%, -50%) translate(${transform.x}px, ${transform.y}px)`,
+          width: layout.width,
+          height: layout.height,
+          transform: `translate(-50%, -50%) translate(${layout.offsetX}px, ${layout.offsetY}px)`,
         }}
       >
         <Video src={src} style={{ width: "100%", height: "100%" }} />
