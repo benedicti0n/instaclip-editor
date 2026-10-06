@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ASPECT_RATIO_PRESETS,
@@ -21,6 +21,7 @@ import {
   selectSelectedTextLayer,
 } from "@/store/editor-selectors";
 import type { TextFontFamily, TextFontWeight } from "@/types/editor";
+import { usePresets } from "./use-presets";
 
 const SELECT_CLASSES =
   "mt-2 w-full rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500";
@@ -42,6 +43,33 @@ export function InspectorPanel() {
   const addTextLayer = useEditorStore((state) => state.addTextLayer);
   const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
   const deleteTextLayer = useEditorStore((state) => state.deleteTextLayer);
+  const applyPreset = useEditorStore((state) => state.applyPreset);
+  const { presets, saveCurrentAsPreset, deletePreset } = usePresets();
+  const [selectedPresetId, setSelectedPresetId] = useState("");
+  const [presetName, setPresetName] = useState("");
+  const selectedPreset =
+    presets.find((preset) => preset.id === selectedPresetId) ?? null;
+
+  function handleSavePreset() {
+    const preset = saveCurrentAsPreset(presetName);
+    setPresetName("");
+    setSelectedPresetId(preset.id);
+  }
+
+  function handleApplyPreset() {
+    if (selectedPreset) {
+      applyPreset(selectedPreset);
+    }
+  }
+
+  function handleDeletePreset() {
+    if (!selectedPreset) {
+      return;
+    }
+
+    deletePreset(selectedPreset.id);
+    setSelectedPresetId("");
+  }
 
   return (
     <aside
@@ -337,6 +365,79 @@ export function InspectorPanel() {
               : "Add text to place it over the video."}
           </p>
         )}
+      </InspectorSection>
+      <InspectorSection title="Presets">
+        {presets.length > 0 ? (
+          <>
+            <label
+              htmlFor="preset-select"
+              className="text-xs font-medium text-zinc-500"
+            >
+              Saved presets
+            </label>
+            <select
+              id="preset-select"
+              value={selectedPresetId}
+              onChange={(event) => setSelectedPresetId(event.target.value)}
+              className={SELECT_CLASSES}
+            >
+              <option value="">Select preset</option>
+              {presets.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.name}
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!selectedPreset}
+                onClick={handleApplyPreset}
+              >
+                Apply
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!selectedPreset}
+                onClick={handleDeletePreset}
+              >
+                Delete
+              </Button>
+            </div>
+          </>
+        ) : (
+          <p className="text-xs leading-5 text-zinc-500">
+            Save your crop, framing, and text as a preset to reuse on other
+            videos.
+          </p>
+        )}
+        <div className="mt-3">
+          <label
+            htmlFor="preset-name"
+            className="text-xs font-medium text-zinc-500"
+          >
+            Name
+          </label>
+          <input
+            id="preset-name"
+            type="text"
+            value={presetName}
+            placeholder="Preset name"
+            onChange={(event) => setPresetName(event.target.value)}
+            className="mt-2 w-full rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-2 w-full"
+          disabled={presetName.trim().length === 0}
+          onClick={handleSavePreset}
+        >
+          Save current
+        </Button>
       </InspectorSection>
       <InspectorSection title="Source">
         <dl className="space-y-2 text-xs">
