@@ -17,6 +17,7 @@ const DEFAULT_TEXT_LAYER: Omit<TextLayer, "id"> = {
   color: "#FFFFFF",
   textAlign: "center",
   hasShadow: true,
+  opacity: 1,
 };
 
 export const MIN_TEXT_FONT_SIZE = 24;
@@ -97,6 +98,7 @@ export function getTextLayerStyle(layer: TextLayer): CSSProperties {
     fontSize: layer.fontSize,
     fontWeight: layer.fontWeight,
     lineHeight: 1.2,
+    opacity: layer.opacity,
     textAlign: layer.textAlign,
     textShadow: layer.hasShadow ? "0 2px 12px rgba(0, 0, 0, 0.65)" : undefined,
     whiteSpace: "pre-wrap",

@@ -92,7 +92,8 @@ export type TextFontWeight = 400 | 600 | 700;
  * `x` and `y` are offsets of the layer's center from the canvas center, in
  * composition pixels (the same coordinate system as `VideoTransform`), so
  * layers survive responsive preview scaling and aspect-ratio changes.
- * `fontSize` is also expressed in composition pixels.
+ * `fontSize` is also expressed in composition pixels. `opacity` is 0..1 and
+ * applies to the whole layer, including its shadow.
  */
 export type TextLayer = {
   id: string;
@@ -105,4 +106,5 @@ export type TextLayer = {
   color: string;
   textAlign: TextAlignment;
   hasShadow: boolean;
+  opacity: number;
 };

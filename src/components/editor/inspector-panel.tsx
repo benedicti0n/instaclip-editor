@@ -222,6 +222,34 @@ export function InspectorPanel() {
               />
             </div>
             <div>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="text-opacity"
+                  className="text-xs font-medium text-zinc-500"
+                >
+                  Opacity
+                </label>
+                <span className="text-xs tabular-nums text-zinc-400">
+                  {Math.round(selectedTextLayer.opacity * 100)}%
+                </span>
+              </div>
+              <input
+                id="text-opacity"
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={selectedTextLayer.opacity}
+                onChange={(event) =>
+                  updateTextLayer(selectedTextLayer.id, {
+                    opacity: Number(event.target.value),
+                  })
+                }
+                aria-valuetext={`${Math.round(selectedTextLayer.opacity * 100)}%`}
+                className="mt-2 w-full cursor-pointer accent-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+              />
+            </div>
+            <div>
               <label
                 htmlFor="text-color"
                 className="text-xs font-medium text-zinc-500"
