@@ -29,6 +29,8 @@ Instagram URL → import → edit → export MP4 / ZIP + caption
 - Public Instagram Reel/video import (yt-dlp, no login or cookies)
 - Original caption extraction and download
 - Precise crop rectangle (edges + corners, move, 5% minimum, keyboard resize)
+  locked to the output aspect ratio, plus a Free mode where the crop shape
+  becomes the output aspect ratio
 - Crop, reposition, and 100–300% zoom with geometry clamping
 - Output aspect ratios: Original, 9:16, 4:5, 1:1, 16:9
 - Multiple text layers with font, weight, size, color, alignment, shadow, and

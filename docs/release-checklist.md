@@ -61,7 +61,13 @@ Start `pnpm start` on a spare port with the real tools on `PATH`:
       text add/edit/delete, keyboard shortcuts, deselect, New video confirm
 - [ ] Precise crop: edge/corner handles, move, 5% minimum, boundary clamp,
       keyboard resize, Escape exits, Reset crop, crop mode disables pan/text
+- [ ] Crop is locked to the output aspect for fixed presets (1:1 crop stays
+      square) and reshapes when the preset changes
+- [ ] Free preset: crop any shape, output surface and exported MP4 dimensions
+      adopt the crop aspect (even-rounded)
 - [ ] Crop composes with aspect ratios, zoom, pan, and text without empty edges
+- [ ] At 100% zoom with a locked crop, dragging the video does nothing and
+      moving the crop box repositions the frame; panning works after zooming in
 - [ ] Text opacity slider updates the canvas live and appears in the export
 - [ ] Presets: save, apply on a second import (media stays loaded, crop applies
       proportionally, text positions/sizes scale), duplicate names allowed,

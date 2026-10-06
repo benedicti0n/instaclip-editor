@@ -124,7 +124,13 @@ source rather than a position on the canvas.
 
 **Crop** (`CropRect`): `x`/`y`/`width`/`height` are fractions of the source
 dimensions, clamped so the rect stays inside the source with a 5% minimum per
-dimension and never inverts.
+dimension and never inverts. With a fixed output preset the crop is additionally
+constrained so its pixel aspect equals the canvas aspect
+(`normalizeCropRectToAspect` on every update, `resizeCropRect` with a
+constraint during drags), which makes the selected region map exactly onto the
+canvas. With the `"free"` preset the crop is unconstrained and the canvas is
+derived from it: `getCanvasSize("free", source, crop)` returns the crop's pixel
+dimensions, rounded to even numbers for H.264.
 
 **Video** (`VideoTransform`): `x`/`y` are the offset of the **crop region's
 center** from the canvas center; `scale` is a multiplier on the cover baseline
@@ -148,7 +154,10 @@ videoCenter   = canvasCenter + (x, y)
 videoSize     = sourceSize * renderedScale
 ```
 
-At the default crop rect this reduces exactly to the pre-crop behavior.
+At the default crop rect this reduces exactly to the pre-crop behavior. When
+the crop is locked to the canvas aspect and `scale = 1`, `renderedCropSize`
+equals the canvas, so the pan bounds are zero: the crop region is exactly the
+output frame and panning only becomes possible after zooming in.
 
 **Text layers**: `x`/`y` are the offset of the layer center from the canvas
 center in composition pixels; `fontSize` is in composition pixels. Layers are

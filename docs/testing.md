@@ -91,6 +91,10 @@ Run against the development server (sample fixture):
 - Precise crop: enter/exit crop mode, drag each edge and corner, move the box,
   minimum-size clamp, boundary clamp, keyboard resize on a focused handle,
   Escape exits, Reset crop restores the full frame, mask drag does nothing.
+- Crop/aspect semantics: fixed presets keep the crop locked to the output
+  aspect while resizing; switching presets reshapes the crop inside the current
+  selection; Free mode allows any shape and the output surface (and exported
+  dimensions) adopt the crop aspect; pan requires zoom once the crop is locked.
 - Presets: save, reload persistence, apply on another source (normalized crop
   and text positions/sizes), duplicate names, delete, corrupt/wrong-version
   localStorage, media unchanged after apply.

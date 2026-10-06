@@ -18,17 +18,19 @@ it.
 Every composition is rendered on a canvas whose size is derived from the
 selected aspect ratio preset:
 
-| Preset   | Canvas                            |
-| -------- | --------------------------------- |
-| Original | Source dimensions (e.g. 720×1280) |
-| 9:16     | 1080×1920                         |
-| 4:5      | 1080×1350                         |
-| 1:1      | 1080×1080                         |
-| 16:9     | 1920×1080                         |
+| Preset   | Canvas                               |
+| -------- | ------------------------------------ |
+| Original | Source dimensions (e.g. 720×1280)    |
+| 9:16     | 1080×1920                            |
+| 4:5      | 1080×1350                            |
+| 1:1      | 1080×1080                            |
+| 16:9     | 1920×1080                            |
+| Free     | Crop pixel dimensions (even-rounded) |
 
 The preview surface always matches the canvas aspect ratio, so what you see is
 proportional to what is exported. Changing the preset re-clamps the video
-transform and every text layer to the new canvas.
+transform and every text layer to the new canvas, and reshapes the crop
+rectangle to the new aspect (see below).
 
 ## Precise crop
 
@@ -46,24 +48,43 @@ Crop mode is an explicit editing mode, toggled from the Canvas inspector section
 - The crop rectangle is stored in normalized source coordinates (0–1), never
   browser pixels, and is clamped to a 5% minimum size and to the source bounds;
   it can never invert or become empty.
-- "Reset crop" restores the full frame. "Reset framing" only resets the video
-  transform, and the two controls stay independent.
-- Crop is not an output aspect ratio: the crop selects which part of the source
-  is used, the aspect ratio decides the output shape. The crop region is
-  cover-fitted into the canvas, and the existing pan/zoom transform applies on
-  top. Changing the crop re-clamps the transform so no empty edge can appear.
+- "Reset crop" restores the largest full-frame region for the current aspect
+  ratio. "Reset framing" only resets the video transform, and the two controls
+  stay independent.
+
+### Crop and output aspect ratio
+
+**What you select in crop mode is exactly what you get in the output.**
+
+- With a fixed preset (Original, 9:16, 4:5, 1:1, 16:9), the crop rectangle is
+  locked to that output aspect ratio: resizing any handle keeps the shape, and
+  the selected region maps 1:1 onto the canvas. Switching presets reshapes the
+  crop to the new aspect, keeping the current center and staying inside the
+  previous selection.
+- With **Free**, the crop rectangle can be any shape and the output canvas
+  adopts the crop region's pixel dimensions. The preview surface switches back
+  to the source aspect while cropping so the whole frame stays visible, then
+  shows the free-cropped result after "Done cropping".
+- Because a locked crop at 100% zoom exactly equals the output frame, there is
+  no pan room: reposition by moving the crop box in crop mode, or zoom in
+  (100–300%) and drag the video. This guarantees no empty edges can ever be
+  exported.
+- The video transform still applies on top: `x`/`y` offset the crop region's
+  center from the canvas center and `scale` zooms, with bounds derived from the
+  crop size.
 
 The same crop feeds the preview and the export through the shared render input
 (see [architecture.md](architecture.md#5-editor-coordinate-systems)).
 
 ## Video framing
 
-- The video always covers the canvas at minimum: scale `1` means the source
-  exactly covers the canvas (the smaller dimension fills it, the larger one
-  overflows).
+- The video always covers the canvas at minimum: scale `1` means the crop
+  region exactly covers the canvas.
 - Zoom range: 100%–300%.
-- Drag the video directly on the canvas to reposition it. Panning is clamped so
-  the video always covers the canvas — no empty edges can be exported.
+- Drag the video directly on the canvas to reposition it when zoomed in;
+  panning is clamped so the video always covers the canvas — no empty edges can
+  be exported. At 100% there is no pan room (the crop region equals the output
+  frame); move the crop box instead.
 - "Reset framing" restores position and 100% zoom.
 - Clamping is recomputed whenever zoom, crop, or aspect ratio changes, so
   zooming out at an edge pulls the video back inside the canvas.
