@@ -23,6 +23,7 @@ import {
   selectDurationInFrames,
   selectEditorDocument,
 } from "@/store/editor-selectors";
+import { CropOverlay } from "./crop-overlay";
 import { TextLayerOverlay } from "./text-layer-overlay";
 import type { VideoTransform } from "@/types/editor";
 
@@ -50,9 +51,12 @@ export function PreviewPanel({ playerRef, onPlayerReady }: PreviewPanelProps) {
   const selectedTextLayerId = useEditorStore(
     (state) => state.selectedTextLayerId,
   );
+  const isCropping = useEditorStore((state) => state.isCropping);
+  const setIsCropping = useEditorStore((state) => state.setIsCropping);
   const selectTextLayer = useEditorStore((state) => state.selectTextLayer);
   const updateTextLayer = useEditorStore((state) => state.updateTextLayer);
   const setVideoTransform = useEditorStore((state) => state.setVideoTransform);
+  const setCropRect = useEditorStore((state) => state.setCropRect);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -116,6 +120,10 @@ export function PreviewPanel({ playerRef, onPlayerReady }: PreviewPanelProps) {
   }, [mediaSrc]);
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (isCropping) {
+      return;
+    }
+
     if (event.pointerType === "mouse" && event.button !== 0) {
       return;
     }
@@ -195,7 +203,11 @@ export function PreviewPanel({ playerRef, onPlayerReady }: PreviewPanelProps) {
       <div
         ref={surfaceRef}
         className={`relative w-full max-w-sm touch-none overflow-hidden rounded-xl border border-zinc-800 bg-black select-none lg:w-[min(100cqw,calc(100cqh*var(--clip-ratio)))] lg:max-w-none ${
-          isDragging ? "cursor-grabbing" : "cursor-grab"
+          isCropping
+            ? "cursor-default"
+            : isDragging
+              ? "cursor-grabbing"
+              : "cursor-grab"
         }`}
         style={
           {
@@ -231,14 +243,27 @@ export function PreviewPanel({ playerRef, onPlayerReady }: PreviewPanelProps) {
               acknowledgeRemotionLicense
               style={{ width: "100%", height: "100%" }}
             />
-            <TextLayerOverlay
-              textLayers={textLayers}
-              selectedTextLayerId={selectedTextLayerId}
-              canvasSize={canvasSize}
-              previewScale={previewScale}
-              onSelectTextLayer={selectTextLayer}
-              onTextLayerChange={updateTextLayer}
-            />
+            {isCropping ? (
+              <CropOverlay
+                mediaSrc={mediaSrc}
+                sourceSize={sourceSize}
+                canvasSize={canvasSize}
+                cropRect={document.cropRect}
+                previewWidth={previewWidth}
+                playerRef={playerRef}
+                onCropRectChange={setCropRect}
+                onExitCropMode={() => setIsCropping(false)}
+              />
+            ) : (
+              <TextLayerOverlay
+                textLayers={textLayers}
+                selectedTextLayerId={selectedTextLayerId}
+                canvasSize={canvasSize}
+                previewScale={previewScale}
+                onSelectTextLayer={selectTextLayer}
+                onTextLayerChange={updateTextLayer}
+              />
+            )}
           </>
         ) : null}
         {isSourceUnavailable ? (

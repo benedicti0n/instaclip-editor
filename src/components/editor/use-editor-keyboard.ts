@@ -23,6 +23,13 @@ export function useEditorKeyboard() {
       }
 
       const state = useEditorStore.getState();
+
+      if (event.key === "Escape" && state.isCropping) {
+        event.preventDefault();
+        state.setIsCropping(false);
+        return;
+      }
+
       const selectedId = state.selectedTextLayerId;
 
       if (!selectedId) {

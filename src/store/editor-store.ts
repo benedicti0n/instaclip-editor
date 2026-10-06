@@ -36,11 +36,13 @@ type EditorActions = {
   updateTextLayer: (id: string, patch: Partial<TextLayer>) => void;
   deleteTextLayer: (id: string) => void;
   selectTextLayer: (id: string | null) => void;
+  setIsCropping: (value: boolean) => void;
   resetEditor: () => void;
 };
 
 export type EditorState = EditorDocument & {
   selectedTextLayerId: string | null;
+  isCropping: boolean;
 } & EditorActions;
 
 const INITIAL_DOCUMENT: EditorDocument = {
@@ -65,6 +67,7 @@ function getGeometry(document: EditorDocument) {
 export const useEditorStore = create<EditorState>()((set, get) => ({
   ...INITIAL_DOCUMENT,
   selectedTextLayerId: null,
+  isCropping: false,
 
   setMedia: (media, metadata) =>
     set({
@@ -72,6 +75,7 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
       media,
       sourceMetadata: metadata,
       selectedTextLayerId: null,
+      isCropping: false,
     }),
 
   loadSourceMetadata: async () => {
@@ -241,5 +245,8 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
 
   selectTextLayer: (id) => set({ selectedTextLayerId: id }),
 
-  resetEditor: () => set({ ...INITIAL_DOCUMENT, selectedTextLayerId: null }),
+  setIsCropping: (value) => set({ isCropping: value }),
+
+  resetEditor: () =>
+    set({ ...INITIAL_DOCUMENT, selectedTextLayerId: null, isCropping: false }),
 }));

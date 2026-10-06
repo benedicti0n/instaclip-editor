@@ -28,6 +28,9 @@ const SELECT_CLASSES =
 export function InspectorPanel() {
   const aspectRatio = useEditorStore((state) => state.aspectRatio);
   const setAspectRatio = useEditorStore((state) => state.setAspectRatio);
+  const isCropping = useEditorStore((state) => state.isCropping);
+  const setIsCropping = useEditorStore((state) => state.setIsCropping);
+  const resetCropRect = useEditorStore((state) => state.resetCropRect);
   const scale = useEditorStore(selectClampedVideoScale);
   const setVideoScale = useEditorStore((state) => state.setVideoScale);
   const resetVideoTransform = useEditorStore(
@@ -69,6 +72,15 @@ export function InspectorPanel() {
             );
           })}
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className={`mt-4 w-full ${isCropping ? "bg-zinc-800" : ""}`}
+          aria-pressed={isCropping}
+          onClick={() => setIsCropping(!isCropping)}
+        >
+          {isCropping ? "Done cropping" : "Edit crop"}
+        </Button>
         <div className="mt-4">
           <div className="flex items-center justify-between">
             <label
@@ -93,14 +105,14 @@ export function InspectorPanel() {
             className="mt-2 w-full cursor-pointer accent-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
           />
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-3 w-full"
-          onClick={resetVideoTransform}
-        >
-          Reset framing
-        </Button>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Button variant="outline" size="sm" onClick={resetVideoTransform}>
+            Reset framing
+          </Button>
+          <Button variant="outline" size="sm" onClick={resetCropRect}>
+            Reset crop
+          </Button>
+        </div>
       </InspectorSection>
       <InspectorSection title="Text">
         <Button
