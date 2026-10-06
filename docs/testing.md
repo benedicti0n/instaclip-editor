@@ -88,18 +88,28 @@ Run against the development server (sample fixture):
   preview sizes.
 - New video: confirm dialog only when dirty; reset returns to `/`.
 - `beforeunload` fires only when dirty.
+- Precise crop: enter/exit crop mode, drag each edge and corner, move the box,
+  minimum-size clamp, boundary clamp, keyboard resize on a focused handle,
+  Escape exits, Reset crop restores the full frame, mask drag does nothing.
+- Presets: save, reload persistence, apply on another source (normalized crop
+  and text positions/sizes), duplicate names, delete, corrupt/wrong-version
+  localStorage, media unchanged after apply.
 
 ## 6. Export scenarios
 
 - Capability check passes on Chromium; export produces a downloadable
-  `edited-video.mp4`.
-- Progress is monotonic and the button updates.
-- Cancel aborts without downloading and returns to idle.
+  `<sourceId>.mp4`.
+- Progress is monotonic and the button updates; cancel aborts without a
+  download; export after cancel succeeds.
+- ZIP export produces `<sourceId>.zip` containing `<sourceId>.mp4` and
+  `<sourceId>.txt` (empty caption included); "Packaging…" state shown; cancel
+  is not offered during packaging.
+- Download source streams the original fetched file as `<sourceId>.mp4`.
 - Exported file inspection (ffprobe): MP4 container, H.264 video, expected
   dimensions for the selected aspect ratio, expected duration, one video track
   (and audio only when the source has audio).
 - Visual parity: an exported frame compared against a screenshot of the
-  preview at the same frame; differences limited to codec compression.
+  preview at the same frame, including a crop + zoom + pan + text case.
 - Export disabled while rendering; New video disabled while rendering.
 
 ## 7. Production-specific scenarios

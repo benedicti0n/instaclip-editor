@@ -28,7 +28,8 @@ Browser
     ├─ router.push("/editor")
     ├─ Remotion Player renders ClipComposition
     ├─ @remotion/web-renderer renders the same composition for export
-    └─ downloads edited-video.mp4 and caption.txt
+    ├─ client-zip packages the rendered blob with the caption
+    └─ downloads <shortcode>.mp4 / <shortcode>.zip / <shortcode>.txt
 ```
 
 ## 2. Client state architecture
@@ -117,18 +118,37 @@ errors. yt-dlp stderr is classified into `UNSUPPORTED_MEDIA`,
 ## 5. Editor coordinate systems
 
 All persisted positions use **composition pixels**, independent of the rendered
-preview size.
+preview size. The crop rectangle is the one exception: it is stored in
+normalized source coordinates (0–1), because it describes a region of the
+source rather than a position on the canvas.
 
-**Video** (`VideoTransform`): `x`/`y` are the offset of the video center from
-the canvas center; `scale` is a multiplier on the cover baseline (`1` = the
-source exactly covers the canvas).
+**Crop** (`CropRect`): `x`/`y`/`width`/`height` are fractions of the source
+dimensions, clamped so the rect stays inside the source with a 5% minimum per
+dimension and never inverts.
+
+**Video** (`VideoTransform`): `x`/`y` are the offset of the **crop region's
+center** from the canvas center; `scale` is a multiplier on the cover baseline
+of the crop region (`1` = the crop region exactly covers the canvas).
 
 ```
-coverScale    = max(canvasWidth / sourceWidth, canvasHeight / sourceHeight)
-renderedWidth = sourceWidth * coverScale * scale
+cropWidth     = sourceWidth * crop.width        (same for height)
+coverScale    = max(canvasWidth / cropWidth, canvasHeight / cropHeight)
+renderedWidth = cropWidth * coverScale * scale
 maxX          = max(0, (renderedWidth - canvasWidth) / 2)
 x ∈ [-maxX, maxX]   (same for y)
 ```
+
+The full video element is positioned so that the crop region lands at
+`canvasCenter + (x, y)`:
+
+```
+renderedScale = coverScale * scale
+videoCenter   = canvasCenter + (x, y)
+                - (cropCenter - sourceCenter) * renderedScale
+videoSize     = sourceSize * renderedScale
+```
+
+At the default crop rect this reduces exactly to the pre-crop behavior.
 
 **Text layers**: `x`/`y` are the offset of the layer center from the canvas
 center in composition pixels; `fontSize` is in composition pixels. Layers are
@@ -139,17 +159,21 @@ ratio, so drag deltas convert as
 `deltaComposition = deltaClient * (canvasWidth / previewWidth)`. The text
 interaction overlay renders a composition-sized container scaled by
 `previewScale = previewWidth / canvasWidth`, which makes hit targets and
-selection outlines line up with the composition exactly.
+selection outlines line up with the composition exactly. Crop mode instead maps
+the source into the preview's contain box: the overlay computes the box from the
+surface and source aspect ratios and places the crop rectangle at
+`boxOrigin + crop * boxSize`.
 
 ## 6. Remotion rendering
 
 - `createClipRenderInput(document)` (`src/remotion/clip-render-input.ts`) is the
-  single deterministic boundary: it clamps the transform and text layers and
-  returns `{ src, sourceWidth, sourceHeight, transform, textLayers }`.
+  single deterministic boundary: it clamps the crop rect, the transform (against
+  the cropped source size), and text layers, and returns
+  `{ src, sourceWidth, sourceHeight, cropRect, transform, textLayers }`.
 - `ClipComposition` (`src/remotion/compositions/clip-composition.tsx`) renders
-  the cover-fitted video plus text layers using `@remotion/media`'s `<Video>`
-  (required for the web renderer; the classic `remotion` `<Video>` is
-  unsupported).
+  the video through `getClipVideoLayout` (section 5) plus text layers using
+  `@remotion/media`'s `<Video>` (required for the web renderer; the classic
+  `remotion` `<Video>` is unsupported).
 - The **Player** in `PreviewPanel` consumes the render input for the editor
   preview.
 - `createExportConfiguration(document)` (`src/remotion/export-config.ts`) adds
@@ -157,11 +181,13 @@ selection outlines line up with the composition exactly.
 - **Export** calls `canRenderMediaOnWeb` then `renderMediaOnWeb` with the same
   composition and render input, encoding MP4 (H.264/AAC) via WebCodecs, with
   real progress and `AbortSignal` cancellation. The resulting blob downloads as
-  `edited-video.mp4`.
-- Preview and export share the composition and render input, so framing,
-  typography, and text positions are identical; parity was verified with an
-  exported-frame comparison (SSIM ≈ 0.94, differences limited to H.264
-  compression).
+  `<sourceId>.mp4`, or is packaged with the caption into `<sourceId>.zip` using
+  `client-zip` (stored, uncompressed, streamed from the blob).
+- Preview and export share the composition and render input, so crop, framing,
+  typography, and text positions are identical; parity was verified with
+  exported-frame comparisons (SSIM ≈ 0.94 full-frame; ≈ 0.86 for a
+  crop+zoom+pan+text frame, where the loss is H.264 chroma subsampling and
+  preview downscaling rather than geometry).
 
 ## 7. Security boundaries
 

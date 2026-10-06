@@ -59,21 +59,41 @@ Start `pnpm start` on a spare port with the real tools on `PATH`:
 
 - [ ] Sample editor (development): drag, zoom clamp, reset, aspect ratio,
       text add/edit/delete, keyboard shortcuts, deselect, New video confirm
-- [ ] Real media: import → edit → nudge → export
-- [ ] Export downloads `edited-video.mp4` with progress and success status
-- [ ] Cancel aborts without a download
+- [ ] Precise crop: edge/corner handles, move, 5% minimum, boundary clamp,
+      keyboard resize, Escape exits, Reset crop, crop mode disables pan/text
+- [ ] Crop composes with aspect ratios, zoom, pan, and text without empty edges
+- [ ] Text opacity slider updates the canvas live and appears in the export
+- [ ] Presets: save, apply on a second import (media stays loaded, crop applies
+      proportionally, text positions/sizes scale), duplicate names allowed,
+      delete only removes the template, presets survive reload
+- [ ] Corrupt or wrong-version preset localStorage does not crash the editor
+- [ ] Real media: import → crop → text/opacity → save preset → export
+- [ ] Export downloads `<shortcode>.mp4` with progress and success status
+- [ ] Export ZIP downloads `<shortcode>.zip` containing `<shortcode>.mp4` and
+      `<shortcode>.txt` (empty caption still included); packaging shows
+      "Packaging…"
+- [ ] Cancel aborts a render without a download; export after cancel works
+- [ ] Download source saves the original fetched video as `<shortcode>.mp4`
 - [ ] Exported file (ffprobe): MP4, H.264, expected dimensions for the chosen
       aspect ratio, expected duration, one video track, audio only when the
       source has audio
-- [ ] Preview/export visual parity checked on an exported frame
-- [ ] Caption downloads as `caption.txt`; empty caption disables the button
+- [ ] Preview/export visual parity checked on an exported frame (crop + zoom +
+      pan + text)
+- [ ] Caption downloads as `<shortcode>.txt`, byte-identical to the import
+      response; empty caption disables the button
+- [ ] ZIP verified programmatically: valid archive, exact filenames, nonzero
+      MP4, caption bytes correct, no folder nesting
 
 ## 6. Responsive and accessibility
 
 - [ ] 1440×900, 834×1112, 390×844, 320×568: no horizontal overflow on `/` and
       `/editor`; canvas keeps aspect ratio; toolbar usable while exporting
+- [ ] Crop handles draggable at every viewport; crop mode toggle reachable
+- [ ] Preset controls, opacity slider, and download/export buttons usable at
+      every viewport
 - [ ] One `h1` per page; preview/inspector landmarks present; every visible
       button and input has an accessible name; first Tab reaches the URL field
+- [ ] Crop handles have accessible names; focused handles resize with arrows
 - [ ] Keyboard-only editing works (arrows, Shift+arrows, Delete, Escape)
 
 ## 7. Docker (**unverified**)

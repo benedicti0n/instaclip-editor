@@ -3,12 +3,13 @@
 ClipCrop is a browser-based Instagram video editor. Paste a public Instagram
 Reel or video post URL, and ClipCrop imports the video with yt-dlp, opens it in
 a Remotion-powered editor, and exports an edited MP4 together with the original
-caption as `caption.txt`.
+caption. Downloads are named after the post's shortcode (e.g.
+`DbhOdVpKygF.mp4`, `DbhOdVpKygF.txt`, `DbhOdVpKygF.zip`).
 
 ## What it does
 
 ```
-Instagram URL → import → edit → export MP4 + caption.txt
+Instagram URL → import → edit → export MP4 / ZIP + caption
 ```
 
 1. Paste a public Instagram Reel or video post URL.
@@ -16,21 +17,30 @@ Instagram URL → import → edit → export MP4 + caption.txt
    caption, and probes duration/dimensions with ffprobe.
 3. The video is served back to the browser through a Range-capable route and
    loaded into the editor through the Zustand store.
-4. Edit the framing and add text overlays in the Remotion Player.
-5. Export renders the same composition in the browser and downloads
-   `edited-video.mp4`.
-6. Download the original Instagram caption as `caption.txt`.
+4. Edit the framing, crop precisely, and add text overlays in the Remotion
+   Player. Save the setup as a preset and reuse it on other videos.
+5. Export renders the same composition in the browser and downloads the edited
+   video (`<shortcode>.mp4`), or packages it with the caption as
+   `<shortcode>.zip`.
+6. Download the original fetched video or the Instagram caption directly.
 
 ## Features
 
 - Public Instagram Reel/video import (yt-dlp, no login or cookies)
 - Original caption extraction and download
+- Precise crop rectangle (edges + corners, move, 5% minimum, keyboard resize)
 - Crop, reposition, and 100–300% zoom with geometry clamping
 - Output aspect ratios: Original, 9:16, 4:5, 1:1, 16:9
-- Multiple text layers with font, weight, size, color, alignment, and shadow
+- Multiple text layers with font, weight, size, color, alignment, shadow, and
+  opacity
+- Reusable presets (crop, framing, aspect ratio, and text styling) saved in
+  localStorage and applicable to other videos with normalized geometry
 - Direct canvas manipulation: drag video, drag text, click to select/deselect
 - Keyboard shortcuts: Delete/Backspace, Escape, arrow nudging (1 px / 10 px)
 - Browser-side MP4 export (H.264/AAC) with real progress and cancellation
+- ZIP export (edited video + caption) with no video re-encoding
+- Original source video download without re-running yt-dlp
+- Shortcode-based filenames for every download
 - Safe "New video" flow with unsaved-edit confirmation and unload protection
 - Production safeguards: import limits, tool health checks, temp cleanup
 
@@ -87,6 +97,7 @@ Rendering:
 
 - `@remotion/web-renderer` with WebCodecs for in-browser MP4 encoding
 - Remotion composition shared between preview and export
+- `client-zip` for streaming, uncompressed ZIP packaging (no MP4 re-encode)
 
 Tooling:
 
@@ -105,8 +116,12 @@ flowchart LR
   R --> Z[Zustand setMedia]
   Z --> PL[Remotion Player]
   PL --> W[@remotion/web-renderer]
-  W --> D[edited-video.mp4]
-  Z --> C[caption.txt]
+  W --> D[shortcode.mp4]
+  W --> ZP[client-zip]
+  ZP --> ZF[shortcode.zip: mp4 + txt]
+  Z --> C[shortcode.txt]
+  Z --> S[Download source]
+  Z --> PS[Presets in localStorage]
 ```
 
 ## Local development
@@ -213,12 +228,17 @@ would break playback and export.
 - Instagram changes its extractor behavior over time; failures surface as
   structured API errors rather than silent retries.
 - Only the primary video of a carousel post is imported; no media picker.
-- Editor state is session-only; there is no persistence and a refresh resets
-  the document.
+- Editor documents are session-only; a refresh resets the document. Presets are
+  the only persisted state, stored per browser in localStorage.
 - Imported media lives in local temp storage and expires (default 6 hours).
 - Browser export requires WebCodecs and an H.264 encoder (Chrome, Edge, or
   Firefox; Safari depends on the platform encoder). The editor itself still
   works without export support.
+- ZIP export holds the rendered MP4 blob and the archive blob in memory at the
+  same time; practical for the default 200 MB source limit, but not for very
+  large renders. `client-zip` stores files without compression.
+- Crop handles support mouse, trackpad, and touch dragging plus arrow-key
+  resizing when focused; moving the whole crop box is pointer-only.
 - No per-IP rate limiting is built in; use a reverse proxy if needed.
 - The concurrency limiter is per server instance, not global.
 
@@ -246,13 +266,18 @@ src/
     api/imports/[id]/video/      Range-capable media route
     api/health/route.ts          tool health
   components/
-    editor/                      editor shell, preview, inspector, playback, hooks
+    editor/                      editor shell, preview, crop overlay, inspector,
+                                 playback, presets/export hooks
     import/                      import form
     ui/                          shared Button
   lib/
-    editor.ts                    transform geometry, canvas sizes, dirty state
+    editor.ts                    crop/transform geometry, canvas sizes, dirty state
     text-layer.ts                text layer model helpers and styles
-    instagram-url.ts             URL validation
+    filenames.ts                 source-id based download filenames
+    presets.ts                   preset model, serialization, apply
+    preset-storage.ts            versioned localStorage persistence
+    export-zip.ts                streaming ZIP packaging (client-zip)
+    instagram-url.ts             URL validation and shortcode extraction
     keyboard.ts                  editable-target guard
     server/                      yt-dlp, ffprobe, temp storage, limits, tooling
   remotion/
@@ -275,11 +300,12 @@ docs/                            architecture, API, editor, testing, checklist
 
 ## Development history
 
-ClipCrop was built in incremental phases (0–10): project bootstrap, editor
+ClipCrop was built in incremental phases (0–11): project bootstrap, editor
 shell, Remotion foundation, crop/reposition, text overlays, Zustand state
 architecture, Instagram ingestion, browser rendering and downloads, UX
-hardening, and production hardening. Every feature landed as its own commit;
-use `git log` for the full history.
+hardening, production hardening, and the precise-crop/presets/download
+workflow. Every feature landed as its own commit; use `git log` for the full
+history.
 
 ## License
 

@@ -30,6 +30,32 @@ The preview surface always matches the canvas aspect ratio, so what you see is
 proportional to what is exported. Changing the preset re-clamps the video
 transform and every text layer to the new canvas.
 
+## Precise crop
+
+Crop mode is an explicit editing mode, toggled from the Canvas inspector section
+("Edit crop" / "Done cropping"):
+
+- While active, the preview shows the **full source video** (contain-fitted,
+  frame-synced to the playback position) with a dark mask outside the crop
+  rectangle, a bright border, and eight resize handles.
+- Drag an edge or corner handle to resize; drag inside the rectangle to move the
+  whole crop region. Dragging the mask does nothing; video panning and text
+  interaction are disabled while crop mode is active.
+- `Escape` exits crop mode (including when a handle has focus).
+- A focused handle also resizes with the arrow keys (1% steps, `Shift` = 5%).
+- The crop rectangle is stored in normalized source coordinates (0–1), never
+  browser pixels, and is clamped to a 5% minimum size and to the source bounds;
+  it can never invert or become empty.
+- "Reset crop" restores the full frame. "Reset framing" only resets the video
+  transform, and the two controls stay independent.
+- Crop is not an output aspect ratio: the crop selects which part of the source
+  is used, the aspect ratio decides the output shape. The crop region is
+  cover-fitted into the canvas, and the existing pan/zoom transform applies on
+  top. Changing the crop re-clamps the transform so no empty edge can appear.
+
+The same crop feeds the preview and the export through the shared render input
+(see [architecture.md](architecture.md#5-editor-coordinate-systems)).
+
 ## Video framing
 
 - The video always covers the canvas at minimum: scale `1` means the source
@@ -38,23 +64,47 @@ transform and every text layer to the new canvas.
 - Zoom range: 100%–300%.
 - Drag the video directly on the canvas to reposition it. Panning is clamped so
   the video always covers the canvas — no empty edges can be exported.
-- "Reset" restores position and 100% zoom.
-- Clamping is recomputed whenever zoom or aspect ratio changes, so zooming out
-  at an edge pulls the video back inside the canvas.
+- "Reset framing" restores position and 100% zoom.
+- Clamping is recomputed whenever zoom, crop, or aspect ratio changes, so
+  zooming out at an edge pulls the video back inside the canvas.
 
 ## Text layers
 
 - "Add text" creates a layer at the canvas center with defaults: text
-  "Add your text", 72 px, Geist, bold (700), white, centered, shadow on.
+  "Add your text", 72 px, Geist, bold (700), white, centered, shadow on, 100%
+  opacity.
 - Drag a text layer on the canvas to move it; click it to select; click the
   background to deselect. Selection shows an outline and the inspector switches
   to that layer's controls.
 - Inspector controls: text content, font (Geist, Arial, Georgia, Courier New),
-  weight (Regular 400 / Semibold 600 / Bold 700), size (24–200 px), color,
-  alignment (left/center/right), and shadow toggle.
+  weight (Regular 400 / Semibold 600 / Bold 700), size (24–200 px), opacity
+  (0–100%), color, alignment (left/center/right), and shadow toggle.
+- Opacity applies to the whole layer, including its shadow, and is rendered
+  identically in the editor and the export.
 - Text is clamped so the layer center stays inside the canvas; the text itself
   may extend beyond the canvas edge, matching export behavior.
 - Any number of text layers can be added.
+
+## Presets
+
+Presets save the editing configuration — aspect ratio, crop, framing, and text
+styling — without any source media, so they can be reused on other videos.
+
+- Save: type a name in the Presets section and click "Save current". Names may
+  repeat; every preset has a unique id.
+- Apply: select a preset and click "Apply". It replaces the aspect ratio, crop,
+  framing, and text layers, selecting the first restored text layer. The
+  imported media, caption, and source id are never touched.
+- Delete removes only the saved template; it never changes the current document.
+- Geometry is stored normalized (positions relative to the canvas, font size
+  relative to canvas height), so a preset reproduces the same relative layout
+  and typography on sources of different dimensions. Crop is already normalized
+  to the source, so it applies proportionally.
+- Text content is saved with the preset and restored, then remains fully
+  editable.
+- Presets live in `localStorage` under `clipcrop.editor-presets.v1` in a
+  versioned format. Corrupt or outdated data is ignored safely; presets never
+  make the document dirty by themselves.
 
 ## Keyboard shortcuts
 
@@ -78,36 +128,47 @@ The playback bar is driven by the Remotion Player through an imperative ref:
 play/pause, a frame scrubber, elapsed/total time, and frame readout. Playback
 state is runtime state, not part of the editor document.
 
-## Export
+## Downloads and export
 
-- "Export" renders the current document with `@remotion/web-renderer` to an
+All download filenames derive from the media's canonical source identifier: the
+Instagram shortcode for imported posts (e.g. `DbhOdVpKygF.mp4`,
+`DbhOdVpKygF.txt`, `DbhOdVpKygF.zip`), or `clipcrop-*` fallbacks when no valid
+identifier exists. The identifier is sanitized to `[A-Za-z0-9_-]+` before use.
+
+- **Download source** saves the exact fetched video via a direct browser
+  download (no re-download through yt-dlp, no render, no JavaScript memory
+  copy).
+- **Download caption** saves the original caption as `<shortcode>.txt` in
+  UTF-8, byte-identical to the import response. With an empty caption the
+  button reads "No caption" and is disabled.
+- **Export** renders the current document with `@remotion/web-renderer` to an
   MP4 (H.264 video, AAC audio) at the canvas size and source duration, then
-  downloads it as `edited-video.mp4`.
+  downloads it as `<shortcode>.mp4`.
+- **Export ZIP** renders the same video once and packages it with the caption
+  into `<shortcode>.zip` containing `<shortcode>.mp4` and `<shortcode>.txt`.
+  The caption file is always included, even when empty. Packaging uses
+  `client-zip` with no compression (MP4 is already compressed).
 - Capability is checked with `canRenderMediaOnWeb` first; unsupported browsers
   get a clear error instead of a broken render.
-- Progress is shown in the button ("Exporting N%"); the Cancel button aborts
-  the render via `AbortSignal`. After a successful export the button reads
-  "Export again".
+- Progress is shown on the active export button ("Exporting N%"); while the ZIP
+  is assembled the button shows "Packaging…". Cancel aborts the render via
+  `AbortSignal`; ZIP packaging itself is not interruptible, so no Cancel button
+  is shown during it.
 - The export uses the same composition and render input as the preview, so
-  framing and text match what was on screen.
-- Export is disabled while rendering; New video is also disabled while
-  rendering.
-
-## Caption download
-
-- The import response carries the post caption. "Download caption" saves it as
-  `caption.txt` (UTF-8).
-- With an empty caption the button reads "No caption" and is disabled.
+  crop, framing, and text match what was on screen.
+- Export buttons and New video are disabled while an export is running.
 
 ## Unsaved edits and leaving
 
-A document counts as dirty when the aspect ratio changed from Original, the
-video transform moved/zoomed, or any text layer exists.
+A document counts as dirty when the crop rectangle changed from full-frame, the
+aspect ratio changed from Original, the video transform moved/zoomed, or any
+text layer exists.
 
 - "New video" asks for confirmation when the document is dirty, then resets
-  the editor and returns to `/`.
+  the editor (including crop and crop mode) and returns to `/`.
 - A `beforeunload` handler warns on refresh/close while the document is dirty.
-- Selection and playback position are not edits and never trigger warnings.
+- Selection, playback position, and saving/applying presets are not edits and
+  never trigger warnings by themselves.
 
 ## Coordinate model (why it feels consistent)
 

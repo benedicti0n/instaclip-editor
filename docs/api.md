@@ -21,7 +21,9 @@ Content-Type: application/json
 The body must be a JSON object with a string `url` (max 2048 characters) and at
 most 8 KB. Accepted URL shapes: `instagram.com` or `www.instagram.com` over
 http/https with `/reel/<shortcode>/`, `/reels/<shortcode>/`, or
-`/p/<shortcode>/` paths. URLs are normalized before use.
+`/p/<shortcode>/` paths. URLs are normalized before use. `sourceId` is the
+validated shortcode (character set `[A-Za-z0-9_-]+`), used by the client for
+download filenames.
 
 Success — `200`:
 
@@ -32,7 +34,8 @@ Success — `200`:
     "kind": "imported",
     "src": "/api/imports/0d9a1f0e-6d1f-4f3e-9c4e-2b1a7c8d5e6f/video",
     "caption": "Post caption text, may be empty",
-    "originalUrl": "https://www.instagram.com/reel/C_jGQ9lpsKG/"
+    "originalUrl": "https://www.instagram.com/reel/C_jGQ9lpsKG/",
+    "sourceId": "C_jGQ9lpsKG"
   },
   "metadata": {
     "durationInSeconds": 12.744898,
