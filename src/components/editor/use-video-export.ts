@@ -11,11 +11,20 @@ import {
 import { ClipComposition } from "@/remotion/compositions/clip-composition";
 import { createExportConfiguration } from "@/remotion/export-config";
 import { downloadBlob } from "@/lib/download";
+import { createExportZipBlob } from "@/lib/export-zip";
 import { getDownloadFilenames } from "@/lib/filenames";
 import { selectEditorDocument } from "@/store/editor-selectors";
 import { useEditorStore } from "@/store/editor-store";
 
-type VideoExportStatus = "idle" | "rendering" | "success" | "error";
+export type VideoExportMode = "video" | "zip";
+
+export type VideoExportStatus =
+  "idle" | "rendering" | "packaging" | "success" | "error";
+
+type CompletedExport = {
+  mode: VideoExportMode;
+  filename: string;
+};
 
 const EXPORT_CONTAINER: WebRendererContainer = "mp4";
 
@@ -35,6 +44,8 @@ export function useVideoExport() {
   const [status, setStatus] = useState<VideoExportStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [activeMode, setActiveMode] = useState<VideoExportMode | null>(null);
+  const [lastExport, setLastExport] = useState<CompletedExport | null>(null);
   const isRenderingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -44,24 +55,11 @@ export function useVideoExport() {
     };
   }, []);
 
-  const startExport = useCallback(async () => {
-    if (isRenderingRef.current) {
-      return;
-    }
+  const renderVideoBlob = useCallback(
+    async (signal: AbortSignal): Promise<Blob> => {
+      const document = selectEditorDocument(useEditorStore.getState());
+      const config = createExportConfiguration(document);
 
-    isRenderingRef.current = true;
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    const document = selectEditorDocument(useEditorStore.getState());
-    const config = createExportConfiguration(document);
-
-    setStatus("rendering");
-    setProgress(0);
-    setError(null);
-
-    try {
       const capability = await canRenderMediaOnWeb({
         container: EXPORT_CONTAINER,
         videoCodec: EXPORT_VIDEO_CODEC,
@@ -91,40 +89,95 @@ export function useVideoExport() {
         container: EXPORT_CONTAINER,
         videoCodec: EXPORT_VIDEO_CODEC,
         audioCodec: EXPORT_AUDIO_CODEC,
-        signal: controller.signal,
+        signal,
         licenseKey: "free-license",
         onProgress: ({ progress: nextProgress }) => {
           setProgress(nextProgress);
         },
       });
 
-      const blob = await result.getBlob();
-      if (controller.signal.aborted) {
+      return await result.getBlob();
+    },
+    [],
+  );
+
+  const startExport = useCallback(
+    async (mode: VideoExportMode) => {
+      if (isRenderingRef.current) {
         return;
       }
 
-      downloadBlob(blob, getDownloadFilenames(document.media).video);
-      setStatus("success");
-    } catch (caught) {
-      if (controller.signal.aborted) {
-        setStatus("idle");
-        setProgress(0);
-        setError(null);
-        return;
-      }
+      isRenderingRef.current = true;
 
-      console.error("[export] render failed", caught);
-      setError(getExportErrorMessage(caught));
-      setStatus("error");
-    } finally {
-      isRenderingRef.current = false;
-      abortRef.current = null;
-    }
-  }, []);
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      const document = selectEditorDocument(useEditorStore.getState());
+      const filenames = getDownloadFilenames(document.media);
+
+      setStatus("rendering");
+      setProgress(0);
+      setError(null);
+      setActiveMode(mode);
+
+      try {
+        const videoBlob = await renderVideoBlob(controller.signal);
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (mode === "zip") {
+          setStatus("packaging");
+
+          const zipBlob = await createExportZipBlob(
+            videoBlob,
+            document.media.caption,
+            { video: filenames.video, caption: filenames.caption },
+          );
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          downloadBlob(zipBlob, filenames.zip);
+          setLastExport({ mode, filename: filenames.zip });
+        } else {
+          downloadBlob(videoBlob, filenames.video);
+          setLastExport({ mode, filename: filenames.video });
+        }
+
+        setStatus("success");
+      } catch (caught) {
+        if (controller.signal.aborted) {
+          setStatus("idle");
+          setProgress(0);
+          setError(null);
+          setActiveMode(null);
+          return;
+        }
+
+        console.error("[export] render failed", caught);
+        setError(getExportErrorMessage(caught));
+        setStatus("error");
+      } finally {
+        isRenderingRef.current = false;
+        abortRef.current = null;
+      }
+    },
+    [renderVideoBlob],
+  );
 
   const cancelExport = useCallback(() => {
     abortRef.current?.abort();
   }, []);
 
-  return { status, progress, error, startExport, cancelExport };
+  return {
+    status,
+    progress,
+    error,
+    activeMode,
+    lastExport,
+    startExport,
+    cancelExport,
+  };
 }

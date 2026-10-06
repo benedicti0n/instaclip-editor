@@ -34,18 +34,30 @@ export function EditorShell() {
     status: exportStatus,
     progress: exportProgress,
     error: exportError,
+    activeMode,
+    lastExport,
     startExport,
     cancelExport,
   } = useVideoExport();
 
-  const isExporting = exportStatus === "rendering";
-  const exportLabel = isExporting
-    ? exportProgress > 0
-      ? `Exporting ${Math.round(exportProgress * 100)}%`
-      : "Exporting…"
-    : exportStatus === "success"
-      ? "Export again"
-      : "Export";
+  const isExporting =
+    exportStatus === "rendering" || exportStatus === "packaging";
+  const progressLabel =
+    exportStatus === "rendering"
+      ? exportProgress > 0
+        ? `Exporting ${Math.round(exportProgress * 100)}%`
+        : "Exporting…"
+      : exportStatus === "packaging"
+        ? "Packaging…"
+        : null;
+  const videoButtonLabel =
+    progressLabel && activeMode === "video"
+      ? progressLabel
+      : exportStatus === "success" && lastExport?.mode === "video"
+        ? "Export again"
+        : "Export";
+  const zipButtonLabel =
+    progressLabel && activeMode === "zip" ? progressLabel : "Export ZIP";
   const hasCaption = caption.length > 0;
 
   function handleDownloadSource() {
@@ -147,7 +159,7 @@ export function EditorShell() {
           >
             {hasCaption ? "Download caption" : "No caption"}
           </Button>
-          {isExporting ? (
+          {exportStatus === "rendering" ? (
             <Button variant="outline" size="sm" onClick={cancelExport}>
               Cancel
             </Button>
@@ -155,10 +167,18 @@ export function EditorShell() {
           <Button
             variant="outline"
             size="sm"
-            onClick={startExport}
+            onClick={() => void startExport("video")}
             disabled={isExporting}
           >
-            {exportLabel}
+            {videoButtonLabel}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void startExport("zip")}
+            disabled={isExporting}
+          >
+            {zipButtonLabel}
           </Button>
         </div>
       </header>
@@ -169,12 +189,12 @@ export function EditorShell() {
         >
           {exportError}
         </p>
-      ) : exportStatus === "success" ? (
+      ) : exportStatus === "success" && lastExport ? (
         <p
           role="status"
           className="border-b border-zinc-800 bg-zinc-950 px-4 py-2 text-xs text-zinc-400 sm:px-6"
         >
-          Export complete — {videoFileName} saved.
+          Export complete — {lastExport.filename} saved.
         </p>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
