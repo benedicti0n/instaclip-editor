@@ -5,7 +5,8 @@ const ALLOWED_PATH_SEGMENTS = new Set(["reel", "reels", "p"]);
 const SHORTCODE_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 type InstagramUrlValidation =
-  { valid: true; normalizedUrl: string } | { valid: false; reason: string };
+  | { valid: true; normalizedUrl: string; shortcode: string }
+  | { valid: false; reason: string };
 
 export function validateInstagramUrl(value: string): InstagramUrlValidation {
   const trimmed = value.trim();
@@ -51,5 +52,6 @@ export function validateInstagramUrl(value: string): InstagramUrlValidation {
   return {
     valid: true,
     normalizedUrl: `https://www.instagram.com/${segments[0]}/${shortcode}/`,
+    shortcode,
   };
 }

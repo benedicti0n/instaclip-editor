@@ -12,6 +12,7 @@ export const SAMPLE_MEDIA: MediaSource = {
   kind: "sample",
   src: SAMPLE_VIDEO_SRC,
   caption: "",
+  sourceId: "sample-video",
 };
 
 export const SAMPLE_VIDEO_METADATA: VideoMetadata = {

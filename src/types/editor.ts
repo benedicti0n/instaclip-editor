@@ -40,6 +40,12 @@ export type MediaSource = {
   src: string;
   caption: string;
   originalUrl?: string;
+  /**
+   * Canonical source identifier: the Instagram shortcode for imported media
+   * (e.g. `DbhOdVpKygF`), or a fixed identifier for the development sample.
+   * Used for user-facing download filenames; never trusted as a path.
+   */
+  sourceId?: string;
 };
 
 /**

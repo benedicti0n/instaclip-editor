@@ -201,6 +201,7 @@ export async function POST(request: Request) {
         src: `/api/imports/${activeImportId}/video`,
         caption: extracted.description,
         originalUrl: validation.normalizedUrl,
+        sourceId: validation.shortcode,
       },
       metadata: {
         durationInSeconds: extracted.durationInSeconds,
