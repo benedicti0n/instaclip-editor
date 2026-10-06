@@ -10,6 +10,7 @@ import {
   DEFAULT_VIDEO_TRANSFORM,
 } from "@/lib/editor";
 import { getVideoMetadata } from "@/lib/media";
+import { applyPresetToDocument, type EditorPreset } from "@/lib/presets";
 import { SAMPLE_MEDIA, SAMPLE_VIDEO_METADATA } from "@/lib/sample-video";
 import { clampTextLayerToCanvas, createTextLayer } from "@/lib/text-layer";
 import type {
@@ -36,6 +37,7 @@ type EditorActions = {
   updateTextLayer: (id: string, patch: Partial<TextLayer>) => void;
   deleteTextLayer: (id: string) => void;
   selectTextLayer: (id: string | null) => void;
+  applyPreset: (preset: EditorPreset) => void;
   setIsCropping: (value: boolean) => void;
   resetEditor: () => void;
 };
@@ -244,6 +246,16 @@ export const useEditorStore = create<EditorState>()((set, get) => ({
     }),
 
   selectTextLayer: (id) => set({ selectedTextLayerId: id }),
+
+  applyPreset: (preset) =>
+    set((state) => {
+      const applied = applyPresetToDocument(preset, state.sourceMetadata);
+
+      return {
+        ...applied,
+        selectedTextLayerId: applied.textLayers[0]?.id ?? null,
+      };
+    }),
 
   setIsCropping: (value) => set({ isCropping: value }),
 
