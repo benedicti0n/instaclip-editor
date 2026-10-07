@@ -98,7 +98,7 @@ The same crop feeds the preview and the export through the shared render input
   background to deselect. Selection shows an outline and the inspector switches
   to that layer's controls.
 - Inspector controls: text content, font (Geist, Arial, Georgia, Courier New),
-  weight (Regular 400 / Semibold 600 / Bold 700), size (24–200 px), opacity
+  weight (Regular 400 / Semibold 600 / Bold 700), size (6–200 px), opacity
   (0–100%), color, alignment (left/center/right), and shadow toggle.
 - Opacity applies to the whole layer, including its shadow, and is rendered
   identically in the editor and the export.

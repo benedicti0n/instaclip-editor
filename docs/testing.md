@@ -79,7 +79,7 @@ Run against the development server (sample fixture):
 - Aspect ratio switch: canvas changes, transform re-clamps, no empty edges.
 - Add text: appears centered with defaults; select, drag, clamp at canvas
   edges; delete via button and via `Delete` key.
-- Inspector: text content, font, weight, size (24–200), color, alignment, and
+- Inspector: text content, font, weight, size (6–200), color, alignment, and
   shadow all update the canvas live.
 - Keyboard: `Escape` deselects; arrows nudge 1 px; `Shift`+arrows nudge 10 px;
   shortcuts are ignored while typing in inputs; `Delete` ignores modifiers and

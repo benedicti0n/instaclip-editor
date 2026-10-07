@@ -20,7 +20,7 @@ const DEFAULT_TEXT_LAYER: Omit<TextLayer, "id"> = {
   opacity: 1,
 };
 
-export const MIN_TEXT_FONT_SIZE = 24;
+export const MIN_TEXT_FONT_SIZE = 6;
 
 export const MAX_TEXT_FONT_SIZE = 200;
 
