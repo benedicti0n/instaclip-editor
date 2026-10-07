@@ -212,6 +212,10 @@ yt-dlp binary for the target architecture, so it needs network access.
 Suitable: VPS, Docker host, or a persistent Node container platform
 (Railway, Fly.io, Render, and similar).
 
+CI runs on every push to `main` and every pull request. Automated production
+deployment is documented (and currently pending server verification) in
+[docs/deployment.md](docs/deployment.md).
+
 Not suitable without changes: purely static hosting, Edge runtimes, and
 ephemeral serverless platforms where the local filesystem is not durable across
 requests/instances, arbitrary binaries are unavailable, or processes are
@@ -298,6 +302,7 @@ docs/                            architecture, API, editor, testing, checklist
 - [Server API](docs/api.md)
 - [Editor behavior](docs/editor.md)
 - [Testing strategy](docs/testing.md)
+- [Deployment](docs/deployment.md)
 - [Release checklist](docs/release-checklist.md)
 
 ## Development history
